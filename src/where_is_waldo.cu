@@ -84,11 +84,11 @@ int main(int argc, char *argv[])
 
 	// we have input and output path, so we can start working on the image.
 
-	// initialize kernel
+	// initialize kernel.
 
-	// create gaussian filter
+	// create gaussian filter.
 
-	// allocate channels
+	// allocate channels.
 
 	// run gaussian blur kernel.
 
