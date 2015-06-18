@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     setAcceptDrops(true);
+    QObject::connect(ui->listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(selectionChanged()));
 }
 
 
@@ -29,17 +30,8 @@ void MainWindow::dropEvent(QDropEvent *e)
 
 }
 
-void MainWindow::keyPressEvent(QKeyEvent *e)
-{
-    UpdateImage();
-}
 
-void MainWindow::mousePressEvent(QMouseEvent *e)
-{
-    UpdateImage();
-}
-
-void MainWindow::UpdateImage()
+void MainWindow::selectionChanged()
 {
     QListWidgetItem *selected_item = ui->listWidget->currentItem();
     selected_item->text();

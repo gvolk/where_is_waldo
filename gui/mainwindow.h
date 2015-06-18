@@ -18,14 +18,14 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+    void selectionChanged();
+
 private:
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
-    void keyPressEvent(QKeyEvent *e);
-    void mousePressEvent(QMouseEvent *e);
-
-    void UpdateImage();
     Ui::MainWindow *ui;
+
 };
 
 #endif // MAINWINDOW_H
