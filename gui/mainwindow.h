@@ -30,6 +30,7 @@ private:
     void dropEvent(QDropEvent *e);
     Ui::MainWindow *ui;
     QPixmap pixmap;
+    QGraphicsScene *scene;
 
 };
 

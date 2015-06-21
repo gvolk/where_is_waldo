@@ -9,6 +9,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     setAcceptDrops(true);
 
+    scene = new QGraphicsScene();
+    ui->graphicsView->setScene(scene);
+
 }
 
 
@@ -49,7 +52,9 @@ QPixmap MainWindow::getQPixmap()
 
 void MainWindow::updateAll()
 {
-    ui->label->setPixmap(pixmap);
+    QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
+    scene->addItem(item);
+    ui->graphicsView->show();
 }
 
 MainWindow::~MainWindow()

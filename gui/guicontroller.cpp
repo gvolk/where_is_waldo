@@ -23,10 +23,9 @@ void GuiController::displayImage()
 {
     QListWidgetItem *selected_item = window->getMainWindow()->listWidget->currentItem();
     selected_item->text();
-    int w = window->getMainWindow()->label->width();
     qDebug() << "show image:" << selected_item->text();
     QPixmap q(selected_item->text());
-    window->setQPixmap(q.scaledToWidth(w));
+    window->setQPixmap(q);
 }
 
 void GuiController::markSubImage()
