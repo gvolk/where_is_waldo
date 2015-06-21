@@ -36,20 +36,20 @@ Ui::MainWindow* MainWindow::getMainWindow()
     return ui;
 }
 
-void MainWindow::setQPixmap(QPixmap *q)
+void MainWindow::setQPixmap(QPixmap q)
 {
     pixmap = q;
     updateAll();
 }
 
-QPixmap* MainWindow::getQPixmap()
+QPixmap MainWindow::getQPixmap()
 {
     return pixmap;
 }
 
 void MainWindow::updateAll()
 {
-    ui->label->setPixmap(*pixmap);
+    ui->label->setPixmap(pixmap);
 }
 
 MainWindow::~MainWindow()

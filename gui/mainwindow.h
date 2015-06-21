@@ -19,8 +19,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     Ui::MainWindow* getMainWindow();
-    void setQPixmap(QPixmap*);
-    QPixmap * getQPixmap();
+    void setQPixmap(QPixmap);
+    QPixmap  getQPixmap();
     void updateAll();
     ~MainWindow();
 
@@ -29,7 +29,7 @@ private:
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
     Ui::MainWindow *ui;
-    QPixmap *pixmap;
+    QPixmap pixmap;
 
 };
 

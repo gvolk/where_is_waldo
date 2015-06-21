@@ -25,20 +25,16 @@ void GuiController::displayImage()
     selected_item->text();
     int w = window->getMainWindow()->label->width();
     qDebug() << "show image:" << selected_item->text();
-    qDebug() << w;
-    QPixmap *q = (QPixmap*) malloc(sizeof(QPixmap));
-    q = new QPixmap(selected_item->text());
-    q = &q->scaledToWidth(w);
-    window->setQPixmap(q);
-
+    QPixmap q(selected_item->text());
+    window->setQPixmap(q.scaledToWidth(w));
 }
 
 void GuiController::markSubImage()
 {
     qDebug() << "test";
-    QPixmap *q = window->getQPixmap();
+    QPixmap q = window->getQPixmap();
     qDebug() << q;
-    QPainter painter(q);
+    QPainter painter(&q);
     QPen Red((QColor(255,0,0)),5);
     painter.setPen(Red);
     painter.drawLine(50,50,1000,1000);
