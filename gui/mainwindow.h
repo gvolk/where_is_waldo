@@ -7,7 +7,6 @@
 #include <QDropEvent>
 #include "ui_mainwindow.h"
 
-
 namespace Ui {
 class MainWindow;
 }
@@ -20,7 +19,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     Ui::MainWindow* getMainWindow();
     void setQPixmap(QPixmap);
-    QPixmap  getQPixmap();
+    QPixmap getQPixmap();
+    QPixmap getOrigQPixmap();
     void updateAll();
     ~MainWindow();
 
@@ -28,9 +28,13 @@ public:
 private:
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
+
     Ui::MainWindow *ui;
     QPixmap pixmap;
     QGraphicsScene *scene;
+
+
+
 
 };
 

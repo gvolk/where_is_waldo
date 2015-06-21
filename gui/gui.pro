@@ -14,9 +14,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    guicontroller.cpp
+    guicontroller.cpp \
+    mygraphicsview.cpp
 
 HEADERS  += mainwindow.h \
-    guicontroller.h
+    guicontroller.h \
+    mygraphicsview.h
 
 FORMS    += mainwindow.ui

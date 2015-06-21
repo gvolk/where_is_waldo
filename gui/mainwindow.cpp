@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     scene = new QGraphicsScene();
     ui->graphicsView->setScene(scene);
-
+    QObject::connect(scene, SIGNAL(), this, SLOT(processPosition(bool,QPoint)));
 }
 
 
@@ -33,7 +33,6 @@ void MainWindow::dropEvent(QDropEvent *e)
 }
 
 
-
 Ui::MainWindow* MainWindow::getMainWindow()
 {
     return ui;
@@ -41,6 +40,7 @@ Ui::MainWindow* MainWindow::getMainWindow()
 
 void MainWindow::setQPixmap(QPixmap q)
 {
+
     pixmap = q;
     updateAll();
 }
@@ -48,6 +48,13 @@ void MainWindow::setQPixmap(QPixmap q)
 QPixmap MainWindow::getQPixmap()
 {
     return pixmap;
+}
+
+QPixmap MainWindow::getOrigQPixmap()
+{
+    QListWidgetItem *selected_item = ui->listWidget->currentItem();
+    QPixmap q(selected_item->text());
+    return q;
 }
 
 void MainWindow::updateAll()

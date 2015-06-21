@@ -22,6 +22,9 @@
     <height>400</height>
    </size>
   </property>
+  <property name="mouseTracking">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Where is Waldo</string>
   </property>
@@ -33,7 +36,7 @@
     </sizepolicy>
    </property>
    <property name="mouseTracking">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="acceptDrops">
     <bool>true</bool>
@@ -79,7 +82,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QGraphicsView" name="graphicsView"/>
+       <widget class="MyGraphicsView" name="graphicsView">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -121,23 +128,23 @@
        <number>10</number>
       </property>
       <item>
-       <widget class="QPushButton" name="subImageButton">
+       <widget class="QRadioButton" name="subImageButton">
         <property name="text">
-         <string>choose Sub-Image</string>
+         <string>Subimage Selection</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="areaSelectionBttonu">
+       <widget class="QRadioButton" name="areaButton">
         <property name="text">
-         <string>select Areas</string>
+         <string>Area Sele&amp;ction</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="topBottomButton">
+       <widget class="QRadioButton" name="topButton">
         <property name="text">
-         <string>select top/bottom</string>
+         <string>&amp;Top/Bottom Selection</string>
         </property>
        </widget>
       </item>
@@ -184,6 +191,13 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>MyGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>mygraphicsview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
