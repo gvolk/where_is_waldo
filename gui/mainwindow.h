@@ -5,6 +5,8 @@
 #include <QtWidgets>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include "ui_mainwindow.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -16,15 +18,18 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+    Ui::MainWindow* getMainWindow();
+    void setQPixmap(QPixmap*);
+    QPixmap * getQPixmap();
+    void updateAll();
     ~MainWindow();
 
-public slots:
-    void selectionChanged();
 
 private:
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
     Ui::MainWindow *ui;
+    QPixmap *pixmap;
 
 };
 

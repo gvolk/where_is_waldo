@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     setAcceptDrops(true);
-    QObject::connect(ui->listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(selectionChanged()));
+
 }
 
 
@@ -27,18 +27,29 @@ void MainWindow::dropEvent(QDropEvent *e)
         ui->listWidget->addItem(fileName);
         qDebug() << "Dropped file:" << fileName;
     }
-
 }
 
 
-void MainWindow::selectionChanged()
+
+Ui::MainWindow* MainWindow::getMainWindow()
 {
-    QListWidgetItem *selected_item = ui->listWidget->currentItem();
-    selected_item->text();
-    qDebug() << "test";
-    qDebug() << "Dropped file:" << selected_item->text();
-    QPixmap image = QPixmap(selected_item->text());
-    ui->label->setPixmap(image);
+    return ui;
+}
+
+void MainWindow::setQPixmap(QPixmap *q)
+{
+    pixmap = q;
+    updateAll();
+}
+
+QPixmap* MainWindow::getQPixmap()
+{
+    return pixmap;
+}
+
+void MainWindow::updateAll()
+{
+    ui->label->setPixmap(*pixmap);
 }
 
 MainWindow::~MainWindow()
