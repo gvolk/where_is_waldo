@@ -4,13 +4,17 @@
 #include "mainwindow.h"
 #include <QApplication>
 
+#define REF_IMG "training_image.jpg"
+#define REF_AREA "training_areas.jpg"
+
 enum select_state{
     SUBIMG, AREA1, AREA2, AREA3, TOPBOT
 };
 
 struct Data{
     QPoint sub_img_start;
-    QPoint sub_img_end;
+    int sub_img_width;
+    int sub_img_heigth;
     QPoint top;
     QPoint bottom;
 };
@@ -32,9 +36,10 @@ private:
 
 public slots:
     void displayImage();
-    void markSubImage();
+    void enterSubImage();
     void processPosition(bool, QPoint);
-    void processMouseMoveEvent(QMouseEvent*);
+    void processMouseMoveEvent(QPoint);
+    void processFinishState();
 
 
 };

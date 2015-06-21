@@ -16,13 +16,14 @@ private:
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
+    QPoint includeScrollbarOffset(QPoint);
     bool selection_started;
     ulong timestamp;
 
 signals:
     //bool shows wheter start or end point
     void posSignal(bool,QPoint);
-    void filteredMouseEvent(QMouseEvent*);
+    void filteredMouseEvent(QPoint);
 
 public slots:
 

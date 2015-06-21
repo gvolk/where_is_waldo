@@ -59,6 +59,7 @@ QPixmap MainWindow::getOrigQPixmap()
 
 void MainWindow::updateAll()
 {
+    scene->clear();
     QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
     scene->addItem(item);
     ui->graphicsView->show();
