@@ -8,15 +8,20 @@
 #define REF_AREA "training_areas.jpg"
 
 enum select_state{
-    SUBIMG, AREA1, AREA2, AREA3, TOP, BOT
+    SUBIMG, AREA1, AREA2, AREA3, TOP, BOT, FINISH
 };
 
 struct Data{
+    int orig_img_width;
+    int orig_img_height;
     QPoint sub_img_start;
     int sub_img_width;
     int sub_img_heigth;
     QPoint top;
     QPoint bottom;
+    QPainterPath area1;
+    QPainterPath area2;
+    QPainterPath area3;
 };
 
 class GuiController : public QObject
@@ -32,6 +37,9 @@ private:
     MainWindow *window;
     void initSlots();
     void paintPoint(QPoint pos);
+    void paintPath(QPainterPath *path, QPoint pos, QColor col);
+    void fillPath(QPainterPath path, QColor col);
+    void saveAreas();
     select_state state;
     Data data;
 

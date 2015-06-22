@@ -8,7 +8,6 @@ MyGraphicsView::MyGraphicsView(QObject *parent)
 
 void MyGraphicsView::mousePressEvent(QMouseEvent *e)
 {
-    qDebug() << "mouse button pressed";
     if(selection_started == true)
     {
         emit posSignal(selection_started, includeScrollbarOffset(e->pos()));
@@ -39,7 +38,6 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *e)
 
 void MyGraphicsView::mouseReleaseEvent(QMouseEvent *e)
 {
-    qDebug() << "mouse button released";
     if(selection_started == false)
     {
         emit posSignal(selection_started, includeScrollbarOffset(e->pos()));

@@ -32,20 +32,25 @@ void GuiController::displayImage()
 
 void GuiController::enterSubImage()
 {
-    state = SUBIMG;
+    window->getMainWindow()->plainTextEdit->setPlainText("mark subimage with mouse");
+    data.orig_img_height = window->getQPixmap().height();
+    data.orig_img_width = window->getQPixmap().width();
     window->getMainWindow()->topButton->setEnabled(false);
     window->getMainWindow()->areaButton->setEnabled(false);
     window->getMainWindow()->subImageButton->setEnabled(true);
     window->getMainWindow()->graphicsView->resetSelectionStart();
-    window->getMainWindow()->plainTextEdit->setPlainText("mark subimage with mouse");
+    state = SUBIMG;
+
 }
 
 void GuiController::enterArea()
 {
+    window->setQPixmap(QPixmap(REF_IMG));
     window->getMainWindow()->plainTextEdit->setPlainText("select most important area of waldo");
     window->getMainWindow()->areaButton->setEnabled(true);
     window->getMainWindow()->topButton->setEnabled(false);
     window->getMainWindow()->areaButton->setChecked(true);
+    window->getMainWindow()->graphicsView->resetSelectionStart();
     state = AREA1;
 }
 
@@ -59,6 +64,7 @@ void GuiController::enterTopBottom()
 
 void GuiController::processMouseMoveEvent(QPoint pos)
 {
+
     if(state == SUBIMG)
     {
         QPixmap q = window->getOrigQPixmap();
@@ -71,17 +77,41 @@ void GuiController::processMouseMoveEvent(QPoint pos)
         window->setQPixmap(q);
         window->updateAll();
     }
+    else if(state == AREA1 )
+    {
+        paintPath(&data.area1, pos, QColor(255,0,0,128));
+    }
+    else if(state == AREA2 )
+    {
+        paintPath(&data.area2, pos, QColor(0,255,0,128));
+    }
+    else if(state == AREA3 )
+    {
+        paintPath(&data.area3, pos, QColor(0,0,255,128));
+    }
+}
+
+void GuiController::paintPath(QPainterPath *path, QPoint pos, QColor col)
+{
+    QPixmap q = window->getQPixmap();
+    QPainter painter(&q);
+    path->lineTo(pos);
+    QPen Red(col,3);
+    painter.setPen(Red);
+    painter.drawPath(*path);
+    window->setQPixmap(q);
+    window->updateAll();
 }
 
 void GuiController::paintPoint(QPoint pos)
 {
-    QPixmap q = window->getQPixmap();
-    QPainter painter(&q);
-    QPen Red((QColor(255,0,0)),7);
-    painter.setPen(Red);
-    painter.drawPoint(pos.x(),pos.y());
-    window->setQPixmap(q);
-    window->updateAll();
+        QPixmap q = window->getQPixmap();
+        QPainter painter(&q);
+        QPen Red((QColor(255,0,0)),7);
+        painter.setPen(Red);
+        painter.drawPoint(pos.x(),pos.y());
+        window->setQPixmap(q);
+        window->updateAll();
 }
 
 void GuiController::processPosition(bool started, QPoint pos)
@@ -119,13 +149,22 @@ void GuiController::processPosition(bool started, QPoint pos)
             break;
         }
         case AREA1:
-            //TODO
+        {
+            data.area1.moveTo(pos);
             break;
+        }
         case AREA2:
-            //TODO
+        {
+            data.area2.moveTo(pos);
             break;
+        }
         case AREA3:
-            //TODO
+        {
+            data.area3.moveTo(pos);
+            break;
+        }
+        default:
+            //nothing to do
             break;
     }
 }
@@ -156,15 +195,64 @@ void GuiController::processFinishState()
             break;
         }
         case AREA1:
-            //TODO
+        {
+            fillPath(data.area1, QColor(255,0,0,128));
+            window->getMainWindow()->plainTextEdit->setPlainText("select scecond most important area of waldo");
+            state = AREA2;
             break;
+        }
         case AREA2:
-            //TODO
+        {
+            fillPath(data.area2, QColor(0,255,0,128));
+            window->getMainWindow()->plainTextEdit->setPlainText("select third most important area of waldo");
+            state = AREA3;
             break;
+        }
         case AREA3:
-            //TODO
+        {
+            fillPath(data.area3, QColor(0,0,255,128));
+            window->getMainWindow()->plainTextEdit->setPlainText("finish to save selected areas");
+            state = FINISH;
+            break;
+        }
+        case FINISH:
+        {
+            window->getMainWindow()->plainTextEdit->setPlainText("selected areas saved");
+            saveAreas();
+        }
+        default:
+            //nothing to do
             break;
     }
+}
+
+
+void GuiController::fillPath(QPainterPath path, QColor col)
+{
+    QPixmap q = window->getQPixmap();
+    QPainter painter(&q);
+    painter.setPen(Qt::NoPen);
+    painter.fillPath(path, QBrush(col));
+    window->setQPixmap(q);
+    window->updateAll();
+}
+
+void GuiController::saveAreas()
+{
+    QPixmap q(REF_IMG);
+    QPixmap areas( q.width(), q.height());
+    QPainter painter(&areas);
+
+    painter.setPen(Qt::NoPen);
+    QRect rect(0, 0, q.width(), q.height());
+    painter.fillRect(rect,QBrush(QColor(0,0,0)));
+
+    painter.fillPath(data.area1, QBrush(QColor(255,0,0)));
+    painter.fillPath(data.area2, QBrush(QColor(0,255,0)));
+    painter.fillPath(data.area3, QBrush(QColor(0,0,255)));
+    QFile file(REF_AREA);
+    file.open(QIODevice::WriteOnly);
+    areas.save(&file, "JPG");
 }
 
 
