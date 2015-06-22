@@ -130,21 +130,33 @@
       <item>
        <widget class="QRadioButton" name="subImageButton">
         <property name="text">
-         <string>Subimage Selection</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="areaButton">
-        <property name="text">
-         <string>Area Sele&amp;ction</string>
+         <string>Subi&amp;mage Selection</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QRadioButton" name="topButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>&amp;Top/Bottom Selection</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="areaButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Area Sele&amp;ction</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

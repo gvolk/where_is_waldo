@@ -8,7 +8,7 @@
 #define REF_AREA "training_areas.jpg"
 
 enum select_state{
-    SUBIMG, AREA1, AREA2, AREA3, TOPBOT
+    SUBIMG, AREA1, AREA2, AREA3, TOP, BOT
 };
 
 struct Data{
@@ -31,6 +31,7 @@ private:
     QApplication *app;
     MainWindow *window;
     void initSlots();
+    void paintPoint(QPoint pos);
     select_state state;
     Data data;
 

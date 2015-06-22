@@ -33,17 +33,28 @@ void GuiController::displayImage()
 void GuiController::enterSubImage()
 {
     state = SUBIMG;
+    window->getMainWindow()->topButton->setEnabled(false);
+    window->getMainWindow()->areaButton->setEnabled(false);
+    window->getMainWindow()->subImageButton->setEnabled(true);
     window->getMainWindow()->graphicsView->resetSelectionStart();
+    window->getMainWindow()->plainTextEdit->setPlainText("mark subimage with mouse");
 }
 
 void GuiController::enterArea()
 {
+    window->getMainWindow()->plainTextEdit->setPlainText("select most important area of waldo");
+    window->getMainWindow()->areaButton->setEnabled(true);
+    window->getMainWindow()->topButton->setEnabled(false);
+    window->getMainWindow()->areaButton->setChecked(true);
     state = AREA1;
 }
 
 void GuiController::enterTopBottom()
 {
-    state = TOPBOT;
+    window->getMainWindow()->plainTextEdit->setPlainText("mark the top of the person");
+    window->getMainWindow()->topButton->setEnabled(true);
+    window->getMainWindow()->topButton->setChecked(true);
+    state = TOP;
 }
 
 void GuiController::processMouseMoveEvent(QPoint pos)
@@ -60,6 +71,17 @@ void GuiController::processMouseMoveEvent(QPoint pos)
         window->setQPixmap(q);
         window->updateAll();
     }
+}
+
+void GuiController::paintPoint(QPoint pos)
+{
+    QPixmap q = window->getQPixmap();
+    QPainter painter(&q);
+    QPen Red((QColor(255,0,0)),7);
+    painter.setPen(Red);
+    painter.drawPoint(pos.x(),pos.y());
+    window->setQPixmap(q);
+    window->updateAll();
 }
 
 void GuiController::processPosition(bool started, QPoint pos)
@@ -80,12 +102,22 @@ void GuiController::processPosition(bool started, QPoint pos)
                 }
                 break;
             }
-        case TOPBOT:
+        case TOP:
+        {
             if(started)
                 data.top = pos;
-            else
-                data.bottom = pos;
+                window->getMainWindow()->plainTextEdit->setPlainText("mark the bottom of the person");
+                state = BOT;
+                paintPoint(pos);
             break;
+        }
+        case BOT:
+        {
+            if(started)
+                data.bottom = pos;
+                paintPoint(pos);
+            break;
+        }
         case AREA1:
             //TODO
             break;
@@ -115,12 +147,14 @@ void GuiController::processFinishState()
                 window->setQPixmap(cropped);
                 window->updateAll();
                 window->getMainWindow()->topButton->setChecked(true);
-                state = TOPBOT;
+                enterTopBottom();
                 break;
             }
-        case TOPBOT:
-            //TODO
+        case BOT:
+        {
+            enterArea();
             break;
+        }
         case AREA1:
             //TODO
             break;
