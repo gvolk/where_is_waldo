@@ -40,8 +40,8 @@ public slots:
     void processPosition(bool, QPoint);
     void processMouseMoveEvent(QPoint);
     void processFinishState();
-
-
+    void enterArea();
+    void enterTopBottom();
 };
 
 
