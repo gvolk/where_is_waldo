@@ -7,16 +7,7 @@
  Description : CUDA compute reciprocals
  ============================================================================
  */
-
-#include <iostream>
-#include <numeric>
-#include <stdlib.h>
-
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::exception;
-using std::string;
+#include "where_is_waldo.h"
 
 static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t);
 #define CUDA_CHECK_RETURN(value) CheckCudaErrorAux(__FILE__,__LINE__, #value, value)
@@ -64,23 +55,8 @@ void initialize(float *data, unsigned size)
 		data[i] = .5*(i+1);
 }
 
-int main(int argc, char *argv[])
+int run(string imagePath, string outputPath)
 {
-	string imagePath;
-	string outputPath;
-
-	// load image to perform gaussian blur.
-	if (argc > 1) {
-		imagePath = string(argv[1]);
-		if (argc > 2) {
-			outputPath = string(argv[2]);
-		} else {
-			outputPath = "output.jpg";
-		}
-	} else {
-		cerr << "Please provide an input (and output) image path as arguments to this application." << endl;
-		exit(1);
-	}
 
 	// we have input and output path, so we can start working on the image.
 
@@ -114,6 +90,30 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+/*
+int main(int argc, char *argv[])
+{
+	string imagePath;
+	string outputPath;
+	/*
+	// load image to perform gaussian blur.
+		if (argc > 1) {
+			imagePath = string(argv[1]);
+			if (argc > 2) {
+				outputPath = string(argv[2]);
+			} else {
+				outputPath = "output.jpg";
+			}
+		} else {
+			cerr << "Please provide an input (and output) image path as arguments to this application." << endl;
+			exit(1);
+		}
+	return run(imagePath, outputPath);
+	run(imagePath,outputPath);
+}
+*/
+
 
 /**
  * Check the return value of the CUDA runtime API call and exit

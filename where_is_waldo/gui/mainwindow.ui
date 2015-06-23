@@ -207,7 +207,7 @@
   <customwidget>
    <class>MyGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>mygraphicsview.h</header>
+   <header>../gui/mygraphicsview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
