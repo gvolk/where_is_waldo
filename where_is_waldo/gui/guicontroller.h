@@ -29,7 +29,8 @@ private:
     void fillPath(QPainterPath path, QColor col);
     void saveAreas();
     select_state state;
-    Data data;
+    TrainingData data;
+    QList<QUrl> images;
 
 public slots:
     void displayImage();
@@ -39,6 +40,7 @@ public slots:
     void processFinishState();
     void enterArea();
     void enterTopBottom();
+    void processDroppedImates(QList<QUrl>);
 };
 
 

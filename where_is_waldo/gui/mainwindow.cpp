@@ -24,14 +24,17 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *e)
 
 void MainWindow::dropEvent(QDropEvent *e)
 {
-    foreach (const QUrl &url, e->mimeData()->urls()) {
-        const QString &fileName = url.toLocalFile();
-
-        ui->listWidget->addItem(fileName);
-        qDebug() << "Dropped file:" << fileName;
-    }
+    emit droppedUrls(e->mimeData()->urls());
 }
 
+void MainWindow::updateList(QList <QUrl> urls)
+{
+    ui->listWidget->clear();
+    foreach (const QUrl &url, urls) {
+        const QString &fileName = url.toString();
+        ui->listWidget->addItem(fileName);
+    }
+}
 
 Ui::MainWindow* MainWindow::getMainWindow()
 {

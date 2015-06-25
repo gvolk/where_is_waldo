@@ -3,7 +3,7 @@
 #include <QApplication>
 #include <QtWidgets>
 
-struct Data{
+struct TrainingData{
     int orig_img_width;
     int orig_img_height;
     QPoint sub_img_start;
@@ -15,5 +15,6 @@ struct Data{
     QPainterPath area2;
     QPainterPath area3;
 };
+
 
 #endif // DATA_H

@@ -17,12 +17,26 @@ void GuiController::initSlots()
     QObject::connect(window->getMainWindow()->saveButton, SIGNAL(clicked()), this, SLOT(processFinishState()));
     QObject::connect(window->getMainWindow()->graphicsView, SIGNAL(posSignal(bool,QPoint)), this, SLOT(processPosition(bool,QPoint)));
     QObject::connect(window->getMainWindow()->graphicsView, SIGNAL(filteredMouseEvent(QPoint)), this, SLOT(processMouseMoveEvent(QPoint)));
+    QObject::connect(window, SIGNAL(droppedUrls(QList<QUrl>)) , this, SLOT(processDroppedImates(QList<QUrl>)));
 }
 
 int GuiController::run()
 {
     window->show();
     return app->exec();
+}
+
+void GuiController::processDroppedImates(QList<QUrl> urls)
+{
+    QDir dir = QDir::currentPath();
+    images.clear();
+
+    foreach (const QUrl &url, urls) {
+
+        const QUrl &image = dir.relativeFilePath(url.toLocalFile());
+        images.append(image);
+    }
+    window->updateList(images);
 }
 
 void GuiController::displayImage()

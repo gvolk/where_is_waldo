@@ -22,6 +22,7 @@ public:
     QPixmap getQPixmap();
     QPixmap getOrigQPixmap();
     void updateAll();
+    void updateList(QList <QUrl>);
     ~MainWindow();
 
 
@@ -33,7 +34,8 @@ private:
     QPixmap pixmap;
     QGraphicsScene *scene;
 
-
+signals:
+    void droppedUrls(QList <QUrl>);
 
 
 };
