@@ -46,12 +46,7 @@ void GuiController::processMenuAction(QAction *action)
     }
     else if(window->getMainWindow()->actionFind_waldo == action)
     {
-        window->statusBar()->showMessage("Search for waldo in List of Images.");
-        window->getMainWindow()->topButton->setEnabled(false);
-        window->getMainWindow()->areaButton->setEnabled(false);
-        window->getMainWindow()->subImageButton->setEnabled(false);
-        window->getMainWindow()->saveButton->setText("search");
-        state = FIND_WALDO;
+        enterFind();
     }
     else if(window->getMainWindow()->actionLoad_training_data == action)
     {
@@ -65,14 +60,14 @@ void GuiController::processMenuAction(QAction *action)
 void GuiController::processDroppedImates(QList<QUrl> urls)
 {
     QDir dir = QDir::currentPath();
-    images.clear();
+    all_training_images.clear();
 
     foreach (const QUrl &url, urls) {
 
         const QUrl &image = dir.relativeFilePath(url.toLocalFile());
-        images.append(image);
+        all_training_images.append(image);
     }
-    window->updateList(images);
+    window->updateList(all_training_images);
 }
 
 void GuiController::displayImage()
@@ -85,6 +80,16 @@ void GuiController::displayImage()
     {
         //TODO implement also show rect of found and marked waldo
     }
+}
+
+void GuiController::enterFind()
+{
+    window->statusBar()->showMessage("Search for waldo in List of Images.");
+    window->getMainWindow()->topButton->setEnabled(false);
+    window->getMainWindow()->areaButton->setEnabled(false);
+    window->getMainWindow()->subImageButton->setEnabled(false);
+    window->getMainWindow()->saveButton->setText("search");
+    state = FIND_WALDO;
 }
 
 void GuiController::enterSubImage()
@@ -328,6 +333,8 @@ void GuiController::processFinishState()
             }
             case FINISH:
             {
+                emit selected_waldo(data);
+                emit all_training_images(all_training_images);
                 window->statusBar()->showMessage("selected areas saved");
                 saveAreas();
             }
@@ -342,16 +349,24 @@ void GuiController::processFinishState()
         qDebug() << file.toString();
         current_waldo.file = file;
 
-        // TODO write to JSON
+        emit marked_waldo(waldos);
     }
     else if(state == FIND_WALDO)
     {
-        //TODO
+        emit find_waldo(all_training_images, data);
     }
     else if(state == LOAD)
     {
-        //TODO
+        emit load();
     }
+}
+
+void GuiController::loadData(TrainingData new_data, QList<QUrl> new_images, QList<WaldoMarker> new_waldos)
+{
+    data = new_data;
+    images = new_images;
+    waldos = new_waldos;
+    enterFind();
 }
 
 

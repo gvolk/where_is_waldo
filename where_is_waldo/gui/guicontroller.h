@@ -23,6 +23,7 @@ class GuiController : public QObject
 public:
     GuiController(int & argc, char ** argv);
     int run();
+    void loadData(TrainingData, QList<QUrl>, QList<WaldoMarker>),
     ~GuiController();
 
 private:
@@ -33,10 +34,11 @@ private:
     void paintPath(QPainterPath *path, QPoint pos, QColor col);
     void fillPath(QPainterPath path, QColor col);
     void saveAreas();
+    void enterFind();
     training_state train_state;
     main_state state;
     TrainingData data;
-    QList<QUrl> images;
+    QList<QUrl> all_training_images;
     QList<WaldoMarker> waldos;
     WaldoMarker current_waldo;
 
@@ -50,6 +52,13 @@ public slots:
     void enterTopBottom();
     void processDroppedImates(QList<QUrl>);
     void processMenuAction(QAction *);
+
+signals:
+    void marked_waldos(QList<WaldoMarker>);
+    void selected_waldo(TrainingData);
+    void all_training_images(QList<QUrl>);
+    void find_waldo(QList<QUrl>, TrainingData);
+    void load();
 };
 
 

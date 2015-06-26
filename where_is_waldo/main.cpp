@@ -5,8 +5,8 @@
 int main(int argc, char *argv[])
 {
 
-    GuiController gc(argc, argv);
-    gc.run();
+    Controller c(argc, argv);
+    c.run();
 
     string a = "";
     string b = "";

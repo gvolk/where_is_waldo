@@ -20,14 +20,16 @@ SOURCES += main.cpp\
         gui/mainwindow.cpp \
     gui/guicontroller.cpp \
     gui/mygraphicsview.cpp \
-    src/controller.cpp
+    src/controller.cpp \
+    src/dataprovider.cpp
 
 HEADERS  += gui/mainwindow.h \
     gui/guicontroller.h \
     gui/mygraphicsview.h \
     src/controller.h \
     $$CUDA_HEADERS \
-    src/data.h
+    src/data.h \
+    src/dataprovider.h
 
 
 
