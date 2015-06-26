@@ -334,7 +334,7 @@ void GuiController::processFinishState()
             case FINISH:
             {
                 emit selected_waldo(data);
-                emit all_training_images(all_training_images);
+                emit all_training_images_sig(all_training_images);
                 window->statusBar()->showMessage("selected areas saved");
                 saveAreas();
             }
@@ -349,7 +349,7 @@ void GuiController::processFinishState()
         qDebug() << file.toString();
         current_waldo.file = file;
 
-        emit marked_waldo(waldos);
+        emit marked_waldos(waldos);
     }
     else if(state == FIND_WALDO)
     {
@@ -364,7 +364,7 @@ void GuiController::processFinishState()
 void GuiController::loadData(TrainingData new_data, QList<QUrl> new_images, QList<WaldoMarker> new_waldos)
 {
     data = new_data;
-    images = new_images;
+    all_training_images = new_images;
     waldos = new_waldos;
     enterFind();
 }

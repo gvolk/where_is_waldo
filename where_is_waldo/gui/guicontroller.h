@@ -23,7 +23,7 @@ class GuiController : public QObject
 public:
     GuiController(int & argc, char ** argv);
     int run();
-    void loadData(TrainingData, QList<QUrl>, QList<WaldoMarker>),
+    void loadData(TrainingData, QList<QUrl>, QList<WaldoMarker>);
     ~GuiController();
 
 private:
@@ -56,7 +56,7 @@ public slots:
 signals:
     void marked_waldos(QList<WaldoMarker>);
     void selected_waldo(TrainingData);
-    void all_training_images(QList<QUrl>);
+    void all_training_images_sig(QList<QUrl>);
     void find_waldo(QList<QUrl>, TrainingData);
     void load();
 };

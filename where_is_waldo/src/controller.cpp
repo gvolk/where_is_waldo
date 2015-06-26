@@ -14,7 +14,7 @@ int Controller::run()
 void Controller::initSlots()
 {
     QObject::connect(gc, SIGNAL(marked_waldos(QList<WaldoMarker>)), this, SLOT(save_marked_waldos(QList<WaldoMarker>)));
-    QObject::connect(gc, SIGNAL(all_training_images(QList<QUrl>)), this, SLOT(save_all_images(QList<QUrl>));
+    QObject::connect(gc, SIGNAL(all_training_images(QList<QUrl>)), this, SLOT(save_all_images(QList<QUrl>)));
     QObject::connect(gc, SIGNAL(find_waldo(QList<QUrl>,TrainingData)), this, SLOT(search_waldo(QList<QUrl>,TrainingData)));
     QObject::connect(gc, SIGNAL(load()), this, SLOT(load()));
 }
