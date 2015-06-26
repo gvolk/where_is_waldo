@@ -4,6 +4,7 @@
 #include <QtWidgets>
 
 struct TrainingData{
+    QUrl file;
     int orig_img_width;
     int orig_img_height;
     QPoint sub_img_start;
@@ -16,5 +17,11 @@ struct TrainingData{
     QPainterPath area3;
 };
 
+struct WaldoMarker{
+    QUrl file;
+    QPoint sub_img_start;
+    int sub_img_width;
+    int sub_img_heigth;
+};
 
 #endif // DATA_H

@@ -8,8 +8,13 @@
 #define REF_IMG "training_image.jpg"
 #define REF_AREA "training_areas.jpg"
 
-enum select_state{
+
+enum training_state{
     SUBIMG, AREA1, AREA2, AREA3, TOP, BOT, FINISH
+};
+
+enum main_state{
+    SELECT_WALDO, MARK_WALDO, FIND_WALDO, LOAD
 };
 
 class GuiController : public QObject
@@ -28,9 +33,12 @@ private:
     void paintPath(QPainterPath *path, QPoint pos, QColor col);
     void fillPath(QPainterPath path, QColor col);
     void saveAreas();
-    select_state state;
+    training_state train_state;
+    main_state state;
     TrainingData data;
     QList<QUrl> images;
+    QList<WaldoMarker> waldos;
+    WaldoMarker current_waldo;
 
 public slots:
     void displayImage();
@@ -41,6 +49,7 @@ public slots:
     void enterArea();
     void enterTopBottom();
     void processDroppedImates(QList<QUrl>);
+    void processMenuAction(QAction *);
 };
 
 
