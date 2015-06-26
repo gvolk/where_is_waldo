@@ -333,6 +333,7 @@ void GuiController::processFinishState()
             }
             case FINISH:
             {
+                qDebug() << "Finishing";
                 emit selected_waldo(data);
                 emit all_training_images_sig(all_training_images);
                 window->statusBar()->showMessage("selected areas saved");
