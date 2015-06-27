@@ -1,6 +1,7 @@
 #include <iostream>
 #include <numeric>
 #include <stdlib.h>
+//#include <QImage>
 
 using std::cout;
 using std::cerr;

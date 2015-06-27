@@ -12,7 +12,7 @@ void DataProvider::saveSelectedWaldo(TrainingData t)
     rapidjson::Document d;
     d.SetObject();
 
-    d.AddMember("file", "", d.GetAllocator());
+    d.AddMember("file", t.file.toString(), d.GetAllocator());
     d.AddMember("orig_img_width", t.orig_img_width, d.GetAllocator());
     d.AddMember("orig_img_height", t.orig_img_height, d.GetAllocator());
     d.AddMember("sub_img_start", "", d.GetAllocator());
@@ -56,13 +56,16 @@ TrainingData DataProvider::loadSelectedWaldo()
     rapidjson::Document d;
     d.ParseStream<0>(is);
 
-    TrainingData data = new TrainingData();
-    data.file = d["file"];
-    data.orig_img_width = d["orig_img_width"];
-    data.orig_img_height = d["orig_img_height"];
+    TrainingData data = TrainingData();
+    //data.file = d["file"];
+    QUrl url;
+    url.setUrl(d["file"].GetString());
+    data.file = url;
+    data.orig_img_width = d["orig_img_width"].GetInt();
+    data.orig_img_height = d["orig_img_height"].GetInt();
     d["sub_img_start"];
-    data.sub_img_width = d["sub_img_width"];
-    data.sub_img_heigth = d["sub_img_heigth"];
+    data.sub_img_width = d["sub_img_width"].GetInt();
+    data.sub_img_heigth = d["sub_img_heigth"].GetInt();
     d["top"];
     d["bottom"];
     d["area1"];

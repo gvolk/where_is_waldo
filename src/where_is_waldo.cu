@@ -59,6 +59,7 @@ int run(string imagePath, string outputPath)
 {
 
 	// we have input and output path, so we can start working on the image.
+    //QImage image = new QImage(imagePath);
 
 	// initialize kernel.
 
