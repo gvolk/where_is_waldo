@@ -50,7 +50,26 @@ void DataProvider::saveAllImages(QList<QUrl> images)
 
 TrainingData DataProvider::loadSelectedWaldo()
 {
-    return TrainingData();
+    FILE * jsonFile = fopen(REF_JSON, "r");
+    char readBuffer[65536];
+    rapidjson::FileReadStream is(jsonFile, readBuffer, sizeof(readBuffer));
+    rapidjson::Document d;
+    d.ParseStream<0>(is);
+
+    TrainingData data = new TrainingData();
+    data.file = d["file"];
+    data.orig_img_width = d["orig_img_width"];
+    data.orig_img_height = d["orig_img_height"];
+    d["sub_img_start"];
+    data.sub_img_width = d["sub_img_width"];
+    data.sub_img_heigth = d["sub_img_heigth"];
+    d["top"];
+    d["bottom"];
+    d["area1"];
+    d["area2"];
+    d["area3"];
+
+    return data;
     //TODO
 }
 
