@@ -8,9 +8,12 @@
  ============================================================================
  */
 #include "where_is_waldo.h"
+#include "PPM.hh"
 
 static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t);
 #define CUDA_CHECK_RETURN(value) CheckCudaErrorAux(__FILE__,__LINE__, #value, value)
+
+# define M_PI           3.14159265358979323846  /* pi */
 
 /**
  * CUDA kernel that computes reciprocal values for a given vector
@@ -19,6 +22,20 @@ __global__ void reciprocalKernel(float *data, unsigned vectorSize) {
 	unsigned idx = blockIdx.x*blockDim.x+threadIdx.x;
 	if (idx < vectorSize)
 		data[idx] = 1.0/data[idx];
+}
+
+__global__ void gaussKernel(float *_src, float *_dst, float _fac, float _div, int _w) {
+    int x = blockIdx.x * MAX_THREADS + threadIdx.x;
+    int y = blockIdx.y;
+    int pos = y * _w + x;
+
+    if (x < _w)
+    {
+        //_dst[pos] = applyGamma(_src[pos], gpuGamma[0]);
+        float tmp = ((x*x+y*y)/_div)*(-1);
+        float res = _fac * exp(tmp);
+        _dst[pos] =
+    }
 }
 
 /**
@@ -55,23 +72,52 @@ void initialize(float *data, unsigned size)
 		data[i] = .5*(i+1);
 }
 
-int run(string imagePath, string outputPath)
+int run(char* imagePath, char* outputPath)
 {
+    // we have input and output path, so we can start working on the image.
+    float* img;
 
-	// we have input and output path, so we can start working on the image.
-    //QImage image = new QImage(imagePath);
+    int w, h;
+    ppm::readPPM(imagePath, w, h, &img);
 
-	// initialize kernel.
+    int nPix = w*h;
+    float* gpuImg;
+    float* gpuResult;
 
-	// create gaussian filter.
+    cudaMalloc((void**) &gpuImg, nPix*3*sizeof(float));
+    cudaMalloc((void**) &gpuResult, nPix*3*sizeof(float));
 
-	// allocate channels.
+    cudaMemcpy(gpuImg, img, nPix*3*sizeof(float), cudaMemcpyHostToDevice);
 
-	// run gaussian blur kernel.
+    static const int MAX_THREADS = 512;
+    dim3 threadBlock(MAX_THREADS);
+    dim3 blockGrid((w*3)/MAX_THREADS + 1, h, 1);
+
+    float sigma = 2.f;
+
+    float factor = 1/(2*M_PI*sigma*sigma);
+    float divider = 2*sigma*sigma;
+
+    // run gaussian blur kernel.
+    std::cout<<"would execute kernerl."<<std::endl;
+    gaussKernel<<< blockGrid, threadBlock >>>(gpuImg, gpuResult, factor, divider, (w*3));
 
 	// save image to disk.
 
-	static const int WORK_SIZE = 65530;
+    cudaMemcpy(img, gpuResult, nPix*3*sizeof(float), cudaMemcpyDeviceToHost);
+
+    cudaFree(gpuResult);
+    cudaFree(gpuImg);
+
+    ppm::writePPM(outputPath, w, h, (float*) img);
+
+    delete[] img;
+
+    std::cout<<"done"<<std::endl;
+
+    return 0;
+
+    /*static const int WORK_SIZE = 65530;
 	float *data = new float[WORK_SIZE];
 
 	initialize (data, WORK_SIZE);
@@ -81,15 +127,15 @@ int run(string imagePath, string outputPath)
 	float cpuSum = std::accumulate (recCpu, recCpu+WORK_SIZE, 0.0);
 	float gpuSum = std::accumulate (recGpu, recGpu+WORK_SIZE, 0.0);
 
-	/* Verify the results */
+    // Verify the results
 	std::cout<<"gpuSum2 = "<<gpuSum<< " cpuSum = " <<cpuSum<<std::endl;
 
-	/* Free memory */
+    // Free memory
 	delete[] data;
 	delete[] recCpu;
 	delete[] recGpu;
 
-	return 0;
+    return 0;*/
 }
 
 /*

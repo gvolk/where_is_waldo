@@ -12,7 +12,7 @@ void DataProvider::saveSelectedWaldo(TrainingData t)
     rapidjson::Document d;
     d.SetObject();
 
-    d.AddMember("file", t.file.toString(), d.GetAllocator());
+    //d.AddMember("file", t.file.toString().toStdString(), d.GetAllocator());
     d.AddMember("orig_img_width", t.orig_img_width, d.GetAllocator());
     d.AddMember("orig_img_height", t.orig_img_height, d.GetAllocator());
     d.AddMember("sub_img_start", "", d.GetAllocator());

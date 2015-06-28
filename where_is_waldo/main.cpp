@@ -4,12 +4,15 @@
 
 int main(int argc, char *argv[])
 {
+    /*string a = "";
+    string b = "";
+    run(a,b);*/
 
     Controller c(argc, argv);
     c.run();
 
-    string a = "";
+    /*string a = "";
     string b = "";
-    run(a,b);
+    run(a,b);*/
 
 }

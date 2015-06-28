@@ -294,7 +294,8 @@ void GuiController::processFinishState()
                     qDebug() << QDir::currentPath();
                     QFile file(REF_IMG);
                     file.open(QIODevice::WriteOnly);
-                    cropped.save(&file, "JPG");
+                    //cropped.save(&file, "JPG");
+                    cropped.save(&file, "PPM");
 
                     QUrl orig_file = QUrl(window->getMainWindow()->listWidget->selectedItems().first()->text());
                     data.file = orig_file;
@@ -396,7 +397,8 @@ void GuiController::saveAreas()
     painter.fillPath(data.area3, QBrush(QColor(0,0,255)));
     QFile file(REF_AREA);
     file.open(QIODevice::WriteOnly);
-    areas.save(&file, "JPG");
+    //areas.save(&file, "JPG");
+    areas.save(&file, "PPM");
 }
 
 
