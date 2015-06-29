@@ -10,6 +10,8 @@
 #include "where_is_waldo.h"
 #include "PPM.hh"
 
+#define MAX_THREADS 512
+
 static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t);
 #define CUDA_CHECK_RETURN(value) CheckCudaErrorAux(__FILE__,__LINE__, #value, value)
 
@@ -28,14 +30,14 @@ __global__ void gaussKernel(float *_src, float *_dst, float _fac, float _div, in
     int x = blockIdx.x * MAX_THREADS + threadIdx.x;
     int y = blockIdx.y;
     int pos = y * _w + x;
-
+    /*
     if (x < _w)
     {
         //_dst[pos] = applyGamma(_src[pos], gpuGamma[0]);
         float tmp = ((x*x+y*y)/_div)*(-1);
         float res = _fac * exp(tmp);
         _dst[pos] =
-    }
+    }*/
 }
 
 /**
@@ -89,7 +91,6 @@ int run(char* imagePath, char* outputPath)
 
     cudaMemcpy(gpuImg, img, nPix*3*sizeof(float), cudaMemcpyHostToDevice);
 
-    static const int MAX_THREADS = 512;
     dim3 threadBlock(MAX_THREADS);
     dim3 blockGrid((w*3)/MAX_THREADS + 1, h, 1);
 

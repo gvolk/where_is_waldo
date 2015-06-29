@@ -11,7 +11,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     scene = new QGraphicsScene();
     ui->graphicsView->setScene(scene);
-    QObject::connect(scene, SIGNAL(), this, SLOT(processPosition(bool,QPoint)));
 }
 
 

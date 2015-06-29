@@ -4,6 +4,7 @@ Controller::Controller(int & argc, char ** argv)
 {
     gc = new GuiController(argc, argv);
     dp = new DataProvider();
+    initSlots();
 }
 
 int Controller::run()
@@ -13,7 +14,7 @@ int Controller::run()
 
 void Controller::initSlots()
 {
-    QObject::connect(gc, SIGNAL(selected_waldo(TrainingData)), this, SLOT(save_selected_waldo(QList<WaldoMarker>)));
+    QObject::connect(gc, SIGNAL(selected_waldo(TrainingData)), this, SLOT(save_selected_waldo(TrainingData)));
     QObject::connect(gc, SIGNAL(marked_waldos(QList<WaldoMarker>)), this, SLOT(save_marked_waldos(QList<WaldoMarker>)));
     QObject::connect(gc, SIGNAL(all_training_images_sig(QList<QUrl>)), this, SLOT(save_all_images(QList<QUrl>)));
     QObject::connect(gc, SIGNAL(find_waldo(QList<QUrl>,TrainingData)), this, SLOT(search_waldo(QList<QUrl>,TrainingData)));
