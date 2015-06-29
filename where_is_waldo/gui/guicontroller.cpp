@@ -97,8 +97,6 @@ void GuiController::enterSubImage()
     if(state == SELECT_WALDO)
     {
         window->statusBar()->showMessage("mark subimage with mouse");
-        data.orig_img_height = window->getQPixmap().height();
-        data.orig_img_width = window->getQPixmap().width();
         train_state = SUBIMG;
     }
     else if (state == MARK_WALDO)
@@ -288,6 +286,10 @@ void GuiController::processFinishState()
         {
             case SUBIMG:
                 {
+                    //save original heigth and width of image
+                    data.orig_img_height = window->getQPixmap().height();
+                    data.orig_img_width = window->getQPixmap().width();
+
                     QRect rect(data.sub_img_start.x(), data.sub_img_start.y(), data.sub_img_width, data.sub_img_heigth);
                     QPixmap cropped = window->getOrigQPixmap().copy(rect);
 
