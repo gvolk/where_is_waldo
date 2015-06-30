@@ -1,6 +1,7 @@
 #ifndef DATAPROVIDER_H
 #define DATAPROVIDER_H
 
+#include <iostream>
 #include "data.h"
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"

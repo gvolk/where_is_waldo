@@ -17,7 +17,7 @@ void DataProvider::saveSelectedWaldo(TrainingData t)
     Document d;
     d.SetObject();
 
-    //d.AddMember("file", t.file.toString().toWCharArray(), d.GetAllocator());
+    //d.AddMember("file", t.file.toString().toStdString().c_str(), d.GetAllocator());
     d.AddMember("orig_img_width", t.orig_img_width, d.GetAllocator());
     d.AddMember("orig_img_height", t.orig_img_height, d.GetAllocator());
     d.AddMember("sub_img_start_x", t.sub_img_start.x(), d.GetAllocator());
@@ -52,7 +52,7 @@ void DataProvider::saveMarkedTrainingData(QList<WaldoMarker> waldos)
         Value v;
         v.SetObject();
 
-        //v.AddMember("file", w.file.fileName().toWCharArray(), d.GetAllocator());
+        //v.AddMember("file", w.file.fileName().toStdString().c_str(), d.GetAllocator());
         v.AddMember("sub_img_heigth", w.sub_img_heigth, d.GetAllocator());
         v.AddMember("sub_img_width", w.sub_img_width, d.GetAllocator());
         v.AddMember("sub_img_start_x", w.sub_img_start.x(), d.GetAllocator());
@@ -71,20 +71,20 @@ void DataProvider::saveMarkedTrainingData(QList<WaldoMarker> waldos)
 
 void DataProvider::saveAllImages(QList<QUrl> images)
 {
-    Document d;
-    d.SetObject();
-
-    int i = 0;
-    foreach (const QUrl &image, images) {
-        //d.AddMember("image_"+i, image.fileName()., d.GetAllocator());
-        i++;
-    }
-
     FILE * jsonFile = fopen(REF_JSON_ALL, "w");
     char writeBuffer[65536];
     FileWriteStream os(jsonFile, writeBuffer, sizeof(writeBuffer));
     Writer<FileWriteStream> writer(os);
-    d.Accept(writer);
+
+    writer.StartObject();
+    writer.String("images");
+    writer.StartArray();
+    foreach (const QUrl &image, images) {
+        writer.String(image.toString().toStdString().c_str());
+    }
+    writer.EndArray();
+    writer.EndObject();
+
     fclose(jsonFile);
 
     return;
@@ -92,7 +92,7 @@ void DataProvider::saveAllImages(QList<QUrl> images)
 
 TrainingData DataProvider::loadSelectedWaldo()
 {
-    FILE * jsonFile = fopen(REF_JSON_TRAINING, "r");
+    /*FILE * jsonFile = fopen(REF_JSON_TRAINING, "r");
     char readBuffer[65536];
     rapidjson::FileReadStream is(jsonFile, readBuffer, sizeof(readBuffer));
     rapidjson::Document d;
@@ -122,12 +122,12 @@ TrainingData DataProvider::loadSelectedWaldo()
     d["bottom"];
     d["area1"];
     d["area2"];
-    d["area3"];
+    d["area3"];*/
 
 
 
-
-    return data;
+    return TrainingData();
+    //return data;
     //TODO
 }
 
@@ -139,7 +139,26 @@ QList<WaldoMarker> DataProvider::loadMarkedTrainingData()
 
 QList<QUrl> DataProvider::loadAllImages()
 {
-    return QList<QUrl>();
-    //TODO
-}
+    FILE * jsonFile = fopen(REF_JSON_ALL, "r");
+    char readBuffer[65536];
+    FileReadStream is(jsonFile, readBuffer, sizeof(readBuffer));
+    Document d;
+    d.ParseStream(is);
 
+    fclose(jsonFile);
+
+    const Value& img = d["images"];
+
+    if (img.IsArray()) {
+        QList<QUrl> urls;
+        qDebug() << "d is array";
+        for (SizeType i = 0; i < img.Size(); i++) {
+            QUrl url;
+            url.setUrl(img[i].GetString());
+            urls.append(urls);
+        }
+        return urls;
+    } else {
+        return QList<QUrl>();
+    }
+}
