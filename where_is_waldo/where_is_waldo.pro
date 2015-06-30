@@ -13,8 +13,10 @@ TEMPLATE = app
 
 
 # CUDA sources
-CUDA_SOURCES += ../src/where_is_waldo.cu
-CUDA_HEADERS += ../src/where_is_waldo.h
+CUDA_SOURCES += ../src/where_is_waldo.cu \
+                ../src/PPM.cpp
+CUDA_HEADERS += ../src/where_is_waldo.h \
+                ../src/PPM.hh
 
 SOURCES += main.cpp\
         gui/mainwindow.cpp \

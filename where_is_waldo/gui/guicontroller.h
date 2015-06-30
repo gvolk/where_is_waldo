@@ -28,22 +28,6 @@ public:
     void loadData(TrainingData, QList<QUrl>, QList<WaldoMarker>);
     ~GuiController();
 
-private:
-    QApplication *app;
-    MainWindow *window;
-    void initSlots();
-    void paintPoint(QPoint pos);
-    void paintPath(QPainterPath *path, QPoint pos, QColor col);
-    void fillPath(QPainterPath path, QColor col);
-    void saveAreas();
-    void enterFind();
-    training_state train_state;
-    main_state state;
-    TrainingData data;
-    QList<QUrl> all_training_images;
-    QList<WaldoMarker> waldos;
-    WaldoMarker current_waldo;
-
 public slots:
     void displayImage();
     void enterSubImage();
@@ -61,6 +45,23 @@ signals:
     void all_training_images_sig(QList<QUrl>);
     void find_waldo(QList<QUrl>, TrainingData);
     void load();
+
+
+private:
+    QApplication *app;
+    MainWindow *window;
+    void initSlots();
+    void paintPoint(QPoint pos);
+    void paintPath(QPainterPath *path, QPoint pos, QColor col);
+    void fillPath(QPainterPath path, QColor col);
+    void saveAreas();
+    void enterFind();
+    training_state train_state;
+    main_state state;
+    TrainingData data;
+    QList<QUrl> all_training_images;
+    QList<WaldoMarker> waldos;
+    WaldoMarker current_waldo;
 };
 
 
