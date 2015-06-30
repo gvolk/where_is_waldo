@@ -17,7 +17,7 @@ void DataProvider::saveSelectedWaldo(TrainingData t)
     Document d;
     d.SetObject();
 
-    d.AddMember("file", t.file.toString().toWCharArray(), d.GetAllocator());
+    //d.AddMember("file", t.file.toString().toWCharArray(), d.GetAllocator());
     d.AddMember("orig_img_width", t.orig_img_width, d.GetAllocator());
     d.AddMember("orig_img_height", t.orig_img_height, d.GetAllocator());
     d.AddMember("sub_img_start_x", t.sub_img_start.x(), d.GetAllocator());
@@ -52,7 +52,7 @@ void DataProvider::saveMarkedTrainingData(QList<WaldoMarker> waldos)
         Value v;
         v.SetObject();
 
-        v.AddMember("file", w.file.fileName().toWCharArray(), d.GetAllocator());
+        //v.AddMember("file", w.file.fileName().toWCharArray(), d.GetAllocator());
         v.AddMember("sub_img_heigth", w.sub_img_heigth, d.GetAllocator());
         v.AddMember("sub_img_width", w.sub_img_width, d.GetAllocator());
         v.AddMember("sub_img_start_x", w.sub_img_start.x(), d.GetAllocator());
@@ -74,8 +74,10 @@ void DataProvider::saveAllImages(QList<QUrl> images)
     Document d;
     d.SetObject();
 
+    int i = 0;
     foreach (const QUrl &image, images) {
-        d.AddMember("image_"+i, image.fileName().toWCharArray(), d.GetAllocator());
+        //d.AddMember("image_"+i, image.fileName()., d.GetAllocator());
+        i++;
     }
 
     FILE * jsonFile = fopen(REF_JSON_ALL, "w");
