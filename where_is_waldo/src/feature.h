@@ -9,6 +9,7 @@ class Feature
 public:
     Feature(TrainingData*);
     void createFeatures();
+    float* getFeature(int nr);
 
 private:
     float* createSingleFeature(int width, int height, QPainterPath area);

@@ -38,7 +38,7 @@ signals:
     void marked_waldos(QList<WaldoMarker>);
     void selected_waldo(TrainingData);
     void all_training_images_sig(QList<QUrl>);
-    void find_waldo(QList<QUrl>, TrainingData);
+    void find_waldo(QList<QUrl>, TrainingData*);
     void load();
 
 
