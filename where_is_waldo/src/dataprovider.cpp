@@ -144,6 +144,10 @@ TrainingData DataProvider::loadSelectedWaldo()
 
     fclose(jsonFile);
 
+    if (!d.IsObject()) {
+        return TrainingData();
+    }
+
     TrainingData td;
 
     QUrl file;
@@ -208,6 +212,10 @@ QList<WaldoMarker> DataProvider::loadMarkedTrainingData()
 
     fclose(jsonFile);
 
+    if (!d.IsObject()) {
+        return QList<WaldoMarker>();
+    }
+
     const Value& w = d["waldos"];
 
     if (w.IsArray()) {
@@ -241,15 +249,18 @@ QList<QUrl> DataProvider::loadAllImages()
 
     fclose(jsonFile);
 
+    if (!d.IsObject()) {
+        return QList<QUrl>();
+    }
+
     const Value& img = d["images"];
 
     if (img.IsArray()) {
         QList<QUrl> urls;
-        qDebug() << "d is array";
         for (SizeType i = 0; i < img.Size(); i++) {
             QUrl url;
             url.setUrl(img[i].GetString());
-            urls.append(urls);
+            urls.append(url);
         }
         return urls;
     } else {

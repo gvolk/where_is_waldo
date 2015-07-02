@@ -30,14 +30,14 @@ __global__ void gaussKernel(float *_src, float *_dst, float _fac, float _div, in
     int x = blockIdx.x * MAX_THREADS + threadIdx.x;
     int y = blockIdx.y;
     int pos = y * _w + x;
-    /*
+
     if (x < _w)
     {
         //_dst[pos] = applyGamma(_src[pos], gpuGamma[0]);
         float tmp = ((x*x+y*y)/_div)*(-1);
         float res = _fac * exp(tmp);
-        _dst[pos] =
-    }*/
+        _dst[pos] = res;
+    }
 }
 
 /**
