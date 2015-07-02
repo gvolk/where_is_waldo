@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     gui/guicontroller.cpp \
     gui/mygraphicsview.cpp \
     src/controller.cpp \
-    src/dataprovider.cpp
+    src/dataprovider.cpp \
+    src/feature.cpp
 
 HEADERS  += gui/mainwindow.h \
     gui/guicontroller.h \
@@ -31,7 +32,8 @@ HEADERS  += gui/mainwindow.h \
     src/controller.h \
     $$CUDA_HEADERS \
     src/data.h \
-    src/dataprovider.h
+    src/dataprovider.h \
+    src/feature.h
 
 
 

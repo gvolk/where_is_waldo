@@ -353,7 +353,7 @@ void GuiController::processFinishState()
     }
     else if(state == FIND_WALDO)
     {
-        emit find_waldo(all_training_images, data);
+        emit find_waldo(all_training_images, &data);
     }
     else if(state == LOAD)
     {

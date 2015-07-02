@@ -3,6 +3,11 @@
 #include <QApplication>
 #include <QtWidgets>
 
+//#define REF_IMG "training_image.jpg"
+#define REF_IMG "training_image.ppm"
+//#define REF_AREA "training_areas.jpg"
+#define REF_AREA "training_areas.ppm"
+
 struct TrainingData{
     QUrl file;
     int orig_img_width;

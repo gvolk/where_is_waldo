@@ -5,11 +5,6 @@
 #include "mainwindow.h"
 #include <QApplication>
 
-//#define REF_IMG "training_image.jpg"
-#define REF_IMG "training_image.ppm"
-//#define REF_AREA "training_areas.jpg"
-#define REF_AREA "training_areas.ppm"
-
 
 enum training_state{
     SUBIMG, AREA1, AREA2, AREA3, TOP, BOT, FINISH
@@ -43,7 +38,7 @@ signals:
     void marked_waldos(QList<WaldoMarker>);
     void selected_waldo(TrainingData);
     void all_training_images_sig(QList<QUrl>);
-    void find_waldo(QList<QUrl>, TrainingData);
+    void find_waldo(QList<QUrl>, TrainingData*);
     void load();
 
 
