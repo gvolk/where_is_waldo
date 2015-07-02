@@ -12,14 +12,17 @@ void Feature::createFeatures()
     feature3 = createSingleFeature(data->sub_img_width, data->sub_img_heigth, data->area3);
 }
 
-float* Feature::createSingleFeature(int width, int heigth, QPainterPath area)
+feature_data* Feature::createSingleFeature(int width, int heigth, QPainterPath area)
 {
     //Allocate Memory width*heigth = num_pixel, *10 because each pixel has 10 features
-    float* feature = new float[width * heigth * 10];
+    int numpix = width * heigth;
+    feature_data* data = new feature_data();
+    data->features = new float[numpix * 9];
+    data->labels = new float[numpix];
     int x=0,y=0,pixel_idx=0,feature_idx=0;
     float* img;
 
-    int numpix = width * heigth;
+
 
     ppm::readPPM(REF_IMG, width, heigth, &img);
 
@@ -37,32 +40,32 @@ float* Feature::createSingleFeature(int width, int heigth, QPainterPath area)
         float b = img[pixel_idx+2];
 
         //make all permutations for feature generation
-        feature_idx = i * 10;
-        feature[feature_idx] = r;
-        feature[feature_idx+1] = g;
-        feature[feature_idx+2] = b;
-        feature[feature_idx+3] = r*r;
-        feature[feature_idx+4] = g*g;
-        feature[feature_idx+5] = b*b;
-        feature[feature_idx+6] = r*g;
-        feature[feature_idx+7] = r*b;
-        feature[feature_idx+8] = g*b;
+        feature_idx = i * 9;
+        data->features[feature_idx] = r;
+        data->features[feature_idx+1] = g;
+        data->features[feature_idx+2] = b;
+        data->features[feature_idx+3] = r*r;
+        data->features[feature_idx+4] = g*g;
+        data->features[feature_idx+5] = b*b;
+        data->features[feature_idx+6] = r*g;
+        data->features[feature_idx+7] = r*b;
+        data->features[feature_idx+8] = g*b;
 
         //if pixel in area then last feature is 1 else -1 like in paper
         if(area.contains(QPoint(x,y)))
         {
-            feature[feature_idx+9] = 1;
+            data->labels[i] = 1;
         }
         else
         {
-            feature[feature_idx+9] = -1;
+            data->labels[i] = -1;
         }
     }
 
-    return feature;
+    return data;
 }
 
-float* Feature::getFeature(int nr){
+feature_data* Feature::getFeature(int nr){
     switch(nr)
     {
         case 1: return feature1;

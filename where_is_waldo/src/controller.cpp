@@ -41,10 +41,11 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     f = new Feature(data);
     f->createFeatures();
 
-    for(int i=0; i<10; i++)
+    for(int i=0; i<9; i++)
     {
-        qDebug() << f->getFeature(1)[i];
+        qDebug() << f->getFeature(1)->features[i];
     }
+    qDebug() << f->getFeature(1)->labels[0];
     //TODO
 }
 
