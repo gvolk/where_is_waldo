@@ -5,11 +5,6 @@
 #include "mainwindow.h"
 #include <QApplication>
 
-//#define REF_IMG "training_image.jpg"
-#define REF_IMG "training_image.ppm"
-//#define REF_AREA "training_areas.jpg"
-#define REF_AREA "training_areas.ppm"
-
 
 enum training_state{
     SUBIMG, AREA1, AREA2, AREA3, TOP, BOT, FINISH
