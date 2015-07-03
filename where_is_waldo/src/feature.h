@@ -4,7 +4,10 @@
 #include "data.h"
 #include "../src/PPM.hh"
 
+#define FEAT_LEN 9
+
 struct feature_data{
+    int num_pix_features;
     float* features;
     float* labels;
 };

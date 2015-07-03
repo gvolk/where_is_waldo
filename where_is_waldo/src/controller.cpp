@@ -40,12 +40,17 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 {
     f = new Feature(data);
     f->createFeatures();
+    c_class = new CPU_Classifier();
 
     for(int i=0; i<9; i++)
     {
         qDebug() << f->getFeature(1)->features[i];
     }
     qDebug() << f->getFeature(1)->labels[0];
+
+    c_class->train(f->getFeature(1));
+    c_class->test_classification(f->getFeature(1), f->getFeature(1));
+
     //TODO
 }
 

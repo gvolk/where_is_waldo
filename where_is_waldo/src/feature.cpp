@@ -17,8 +17,9 @@ feature_data* Feature::createSingleFeature(int width, int heigth, QPainterPath a
     //Allocate Memory width*heigth = num_pixel, *10 because each pixel has 10 features
     int numpix = width * heigth;
     feature_data* data = new feature_data();
-    data->features = new float[numpix * 9];
+    data->features = new float[numpix * FEAT_LEN];
     data->labels = new float[numpix];
+    data->num_pix_features = numpix;
     int x=0,y=0,pixel_idx=0,feature_idx=0;
     float* img;
 
@@ -28,7 +29,6 @@ feature_data* Feature::createSingleFeature(int width, int heigth, QPainterPath a
 
     for(int i = 0; i < numpix; i++)
     {
-        qDebug() << numpix << i;
         x = i % heigth;
         y = (int)(i / heigth);
 
@@ -40,7 +40,7 @@ feature_data* Feature::createSingleFeature(int width, int heigth, QPainterPath a
         float b = img[pixel_idx+2];
 
         //make all permutations for feature generation
-        feature_idx = i * 9;
+        feature_idx = i * FEAT_LEN;
         data->features[feature_idx] = r;
         data->features[feature_idx+1] = g;
         data->features[feature_idx+2] = b;
@@ -51,14 +51,14 @@ feature_data* Feature::createSingleFeature(int width, int heigth, QPainterPath a
         data->features[feature_idx+7] = r*b;
         data->features[feature_idx+8] = g*b;
 
-        //if pixel in area then last feature is 1 else -1 like in paper
+        //if pixel in area then last feature is 1 else 0 like in paper
         if(area.contains(QPoint(x,y)))
         {
             data->labels[i] = 1;
         }
         else
         {
-            data->labels[i] = -1;
+            data->labels[i] = 0;
         }
     }
 

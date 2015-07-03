@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     gui/mygraphicsview.cpp \
     src/controller.cpp \
     src/dataprovider.cpp \
-    src/feature.cpp
+    src/feature.cpp \
+    src/cpu_classifier.cpp
 
 HEADERS  += gui/mainwindow.h \
     gui/guicontroller.h \
@@ -33,7 +34,8 @@ HEADERS  += gui/mainwindow.h \
     $$CUDA_HEADERS \
     src/data.h \
     src/dataprovider.h \
-    src/feature.h
+    src/feature.h \
+    src/cpu_classifier.h
 
 
 

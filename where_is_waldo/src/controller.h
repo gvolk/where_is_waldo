@@ -5,6 +5,7 @@
 #include "feature.h"
 #include "dataprovider.h"
 #include "../gui/guicontroller.h"
+#include "cpu_classifier.h"
 
 class Controller: public QObject
 {
@@ -18,6 +19,7 @@ private:
     GuiController *gc;
     DataProvider *dp;
     Feature *f;
+    CPU_Classifier* c_class;
     void initSlots();
 
 public slots:
