@@ -29,7 +29,7 @@ feature_data* Feature::createSingleFeature(int width, int heigth, QPainterPath a
 
     for(int i = 0; i < numpix; i++)
     {
-        x = i % heigth;
+        x = i % width;
         y = (int)(i / heigth);
 
         //* 3 because each pixel has r,g,b

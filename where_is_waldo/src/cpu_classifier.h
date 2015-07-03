@@ -1,7 +1,7 @@
 #ifndef CPU_CLASSIFIER_H
 #define CPU_CLASSIFIER_H
 
-#include <iostream>
+
 #include <cmath>
 #include "feature.h"
 
