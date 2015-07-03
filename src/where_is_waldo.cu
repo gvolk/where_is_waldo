@@ -20,30 +20,48 @@ static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t
 /**
  * CUDA kernel that computes reciprocal values for a given vector
  */
-__global__ void reciprocalKernel(float *data, unsigned vectorSize) {
+/*__global__ void reciprocalKernel(float *data, unsigned vectorSize) {
 	unsigned idx = blockIdx.x*blockDim.x+threadIdx.x;
 	if (idx < vectorSize)
 		data[idx] = 1.0/data[idx];
-}
+}*/
 
-__global__ void gaussKernel(float *_src, float *_dst, float _fac, float _div, int _w) {
-    int x = blockIdx.x * MAX_THREADS + threadIdx.x;
-    int y = blockIdx.y;
-    int pos = y * _w + x;
-    /*
-    if (x < _w)
-    {
-        //_dst[pos] = applyGamma(_src[pos], gpuGamma[0]);
-        float tmp = ((x*x+y*y)/_div)*(-1);
-        float res = _fac * exp(tmp);
-        _dst[pos] =
-    }*/
+__global__ void gaussKernel(float *_src, float *_dst, float* _weight, int _width, int _w, int _h) {
+    int _x = blockIdx.x * blockDim.x + threadIdx.x;
+    int _y = blockIdx.y * blockDim.y + threadIdx.y;
+    //int pos = y * _w + x;
+
+    if (_x >= _w || _y >= _h) {
+        return;
+    }
+
+    int half = _width/2;
+    float blur = 0.f;
+
+    for (int y = -half; y <= half; y++) {
+        for (int x = -half; x <= half; x++) {
+            int w = min(max(_x+x, 0), _w);
+            int h = min(max(_y+y, 0), _h);
+
+            int idx = w + _w*h;
+
+            float pixel = _src[idx];
+
+            idx = (y+half)*_width + x+half;
+
+            float weight = _weight[idx];
+
+            blur += pixel*weight;
+        }
+    }
+
+    _dst[_x + _y*_w] = blur;
 }
 
 /**
  * Host function that copies the data and launches the work on GPU
  */
-float *gpuReciprocal(float *data, unsigned size)
+/*float *gpuReciprocal(float *data, unsigned size)
 {
 	float *rc = new float[size];
 	float *gpuData;
@@ -72,14 +90,15 @@ void initialize(float *data, unsigned size)
 {
 	for (unsigned i = 0; i < size; ++i)
 		data[i] = .5*(i+1);
-}
+}*/
 
 int run(char* imagePath, char* outputPath)
 {
-    // we have input and output path, so we can start working on the image.
+    /** BEGIN init kernel. */
     float* img;
 
     int w, h;
+    // read imagePath (input image).
     ppm::readPPM(imagePath, w, h, &img);
 
     int nPix = w*h;
@@ -90,21 +109,55 @@ int run(char* imagePath, char* outputPath)
     cudaMalloc((void**) &gpuResult, nPix*3*sizeof(float));
 
     cudaMemcpy(gpuImg, img, nPix*3*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemset(gpuResult, 0, nPix*3*sizeof(float));
+    /** END init kernel. */
 
-    dim3 threadBlock(MAX_THREADS);
-    dim3 blockGrid((w*3)/MAX_THREADS + 1, h, 1);
+    /** BEGIN create gaussian */
+    const int width = 9;
+    const float sigma = 2.f;
 
-    float sigma = 2.f;
+    const int half = width/2;
+    float sum = 0.f;
 
-    float factor = 1/(2*M_PI*sigma*sigma);
-    float divider = 2*sigma*sigma;
+    /*vector<float> matrix;
+    matrix.resize(width*width);*/
+    float* matrix;
+
+    for (int y = -half; y <= half; y++) {
+        for (int x = -half; x <= half; x++) {
+            float weight = std::exp(-static_cast<float>(x*x+y*y)/(2.f*sigma*sigma));
+            int idx = (y+half)*width + x+half;
+
+            matrix[idx] = weight;
+            sum += weight;
+        }
+    }
+
+    float normal = 1.f/sum;
+
+    for (int y = -half; y <= half; y++) {
+        for (int x = -half; x <= half; x++) {
+            int idx = (y+half)*width + x+half;
+
+            matrix[idx] *= normal;
+        }
+    }
+    /** END create gaussian */
+
+    /** BEGIN run kernel. */
+    static const int BLOCK_WIDTH = 32;
+    int x = w/BLOCK_WIDTH;
+    int y = h/BLOCK_WIDTH;
+
+    const dim3 grid (x, y, 1);
+    const dim3 block (BLOCK_WIDTH, BLOCK_WIDTH, 1);
 
     // run gaussian blur kernel.
     std::cout<<"would execute kernerl."<<std::endl;
-    gaussKernel<<< blockGrid, threadBlock >>>(gpuImg, gpuResult, factor, divider, (w*3));
+    gaussKernel<<< grid, block >>>(gpuImg, gpuResult, matrix, width, w, h);
+    /** END run kernel. */
 
-	// save image to disk.
-
+    /** BEGIN save to disk */
     cudaMemcpy(img, gpuResult, nPix*3*sizeof(float), cudaMemcpyDeviceToHost);
 
     cudaFree(gpuResult);
@@ -113,6 +166,7 @@ int run(char* imagePath, char* outputPath)
     ppm::writePPM(outputPath, w, h, (float*) img);
 
     delete[] img;
+    /** BEGIN save to disk */
 
     std::cout<<"done"<<std::endl;
 

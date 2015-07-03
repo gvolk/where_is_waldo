@@ -61,12 +61,11 @@ void GuiController::processDroppedImates(QList<QUrl> urls)
 {
     QDir dir = QDir::currentPath();
     all_training_images.clear();
-
     foreach (const QUrl &url, urls) {
-
         const QUrl &image = dir.relativeFilePath(url.toLocalFile());
         all_training_images.append(image);
     }
+
     window->updateList(all_training_images);
 }
 
@@ -293,7 +292,6 @@ void GuiController::processFinishState()
                     QRect rect(data.sub_img_start.x(), data.sub_img_start.y(), data.sub_img_width, data.sub_img_heigth);
                     QPixmap cropped = window->getOrigQPixmap().copy(rect);
 
-                    qDebug() << QDir::currentPath();
                     QFile file(REF_IMG);
                     file.open(QIODevice::WriteOnly);
                     //cropped.save(&file, "JPG");
@@ -349,7 +347,6 @@ void GuiController::processFinishState()
     else if(state == MARK_WALDO)
     {
         QUrl file = QUrl(window->getMainWindow()->listWidget->selectedItems().first()->text());
-        qDebug() << file.toString();
         current_waldo.file = file;
 
         emit marked_waldos(waldos);
@@ -369,7 +366,12 @@ void GuiController::loadData(TrainingData new_data, QList<QUrl> new_images, QLis
     data = new_data;
     all_training_images = new_images;
     waldos = new_waldos;
+
+    window->updateList(all_training_images);
+
+    displayImage();
     enterFind();
+    //enterSubImage();
 }
 
 
