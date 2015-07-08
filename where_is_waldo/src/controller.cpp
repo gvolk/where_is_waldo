@@ -75,15 +75,51 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
      * So these files are not included in any public git repositories.
      *
      */
+    string tmp = "camera_loading/test.nvm";
+    const char* filename = tmp.c_str();
 
+    // Load file paths.
+    vector<S> paths = LoadFilenamesFromFile(filename);
 
+    // Load camera data.
+    vector<pair<CameraDataf, CameraPoseDataf> > cameraData =
+                LoadCamerasFromFile(filename);
+
+    // Pick to cameras
+    CameraDataf cam1 = cameraData[0].first;
+    CameraPoseDataf pose1 = cameraData[0].second;
+    CameraDataf cam2 = cameraData[12].first;
+    CameraPoseDataf pose2 = cameraData[12].second;
+
+    // === Project a point from one camera to the other ===
+    Vec2f image1Point(cam1.ImageSize / 2); // Pick a point at the center of the image
+
+    // Process several depths
+    for (float d = 0.4f; d <= 1.6f; d += 0.3f)
+    {
+        // Transform point to viewspace vector
+        Vec3f cam1Dir = cam1.GetViewspaceDirection(image1Point);
+        // Transform to worldspace ray
+        Rayf worldRay = pose1.GetWorldspaceRay(cam1Dir);
+
+        // Pick a point on the ray according to depth
+        Vec3f worldPoint = worldRay.Origin + worldRay.Direction * d;
+        // ATTENTION: The depth is interpreted along the normalized ray direction, not along the principal camera axis!
+        // Maybe you have to change this.
+
+        // Transform to second camera's viewspace
+        Vec3f cam2Dir = pose2.GetViewspaceDirectionFromPoint(worldPoint);
+        // Transform to second image
+        Vec2f image2Point = cam2.GetImagePosition(cam2Dir);
+
+        // Output results
+        cout << "Center pixel of first image (" << image1Point << ") "
+                << "with depth " << d << " corresponds to (" << image2Point
+                << ") on second image." << endl;
+    }
 }
 
-struct S {
-    char path[512];
-};
-
-vector<S> LoadFilenamesFromFile(const char* filename) {
+vector<S> Controller::LoadFilenamesFromFile(const char* filename) {
     vector<S> result;
 
     ifstream fin(filename);
@@ -117,7 +153,7 @@ vector<S> LoadFilenamesFromFile(const char* filename) {
     return result;
 }
 
-vector<pair<CameraDataf, CameraPoseDataf> > LoadCamerasFromFile(
+vector<pair<CameraDataf, CameraPoseDataf> > Controller::LoadCamerasFromFile(
         const char* filename)
 {
     vector<pair<CameraDataf, CameraPoseDataf> > result;

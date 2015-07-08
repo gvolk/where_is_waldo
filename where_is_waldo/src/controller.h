@@ -18,6 +18,10 @@
 using namespace std;
 using namespace base;
 
+struct S {
+    char path[512];
+};
+
 class Controller: public QObject
 {
     Q_OBJECT
@@ -25,7 +29,7 @@ class Controller: public QObject
 public:
     Controller(int & argc, char ** argv);
     int run();
-    vector<char[512]> LoadFilenamesFromFile(const char* filename);
+    vector<S> LoadFilenamesFromFile(const char* filename);
     vector<pair<CameraDataf, CameraPoseDataf> > LoadCamerasFromFile(const char* filename);
 
 private:
