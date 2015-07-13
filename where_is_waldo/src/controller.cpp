@@ -36,6 +36,7 @@ void Controller::save_all_images(QList<QUrl> images)
 
 void Controller::save_selected_waldo(TrainingData data)
 {
+    qDebug() << data.area1;
     dp->saveSelectedWaldo(data);
 }
 
