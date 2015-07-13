@@ -61,16 +61,19 @@ void DataProvider::saveSelectedWaldo(TrainingData t)
     file1.open(QIODevice::WriteOnly);
     QDataStream out1(&file1);
     out1 << t.area1;
+    file1.close();
 
     QFile file2("area2.dat");
     file2.open(QIODevice::WriteOnly);
     QDataStream out2(&file2);
     out2 << t.area2;
+    file2.close();
 
     QFile file3("area3.dat");
     file3.open(QIODevice::WriteOnly);
     QDataStream out3(&file3);
     out3 << t.area3;
+    file3.close();
 
     return;
 }
@@ -136,7 +139,7 @@ void DataProvider::saveAllImages(QList<QUrl> images)
 
 TrainingData DataProvider::loadSelectedWaldo()
 {
-    FILE * jsonFile = fopen(REF_JSON_TRAINING, "w");
+    FILE * jsonFile = fopen(REF_JSON_TRAINING, "r");
     char readBuffer[65536];
     FileReadStream is(jsonFile, readBuffer, sizeof(readBuffer));
     Document d;
@@ -145,6 +148,7 @@ TrainingData DataProvider::loadSelectedWaldo()
     fclose(jsonFile);
 
     if (!d.IsObject()) {
+        qDebug() << "Error: loadingSelectedWaldo(): d is no object";
         return TrainingData();
     }
 
@@ -180,31 +184,31 @@ TrainingData DataProvider::loadSelectedWaldo()
     QDataStream in1(&file1);
     QPainterPath path1;
     in1 >> path1;
-
     td.area1 = path1;
+    file1.close();
 
     QFile file2("area2.dat");
     file2.open(QIODevice::ReadOnly);
     QDataStream in2(&file2);
     QPainterPath path2;
     in2 >> path2;
-
     td.area2 = path2;
+    file2.close();
 
     QFile file3("area3.dat");
     file3.open(QIODevice::ReadOnly);
     QDataStream in3(&file3);
     QPainterPath path3;
     in3 >> path3;
-
     td.area3 = path3;
+    file3.close();
 
     return td;
 }
 
 QList<WaldoMarker> DataProvider::loadMarkedTrainingData()
 {
-    FILE * jsonFile = fopen(REF_JSON_MARKED, "w");
+    FILE * jsonFile = fopen(REF_JSON_MARKED, "r");
     char readBuffer[65536];
     FileReadStream is(jsonFile, readBuffer, sizeof(readBuffer));
     Document d;
@@ -213,6 +217,7 @@ QList<WaldoMarker> DataProvider::loadMarkedTrainingData()
     fclose(jsonFile);
 
     if (!d.IsObject()) {
+        qDebug() << "Error: loadMarkedTrainingData(): d is no object";
         return QList<WaldoMarker>();
     }
 
@@ -250,6 +255,7 @@ QList<QUrl> DataProvider::loadAllImages()
     fclose(jsonFile);
 
     if (!d.IsObject()) {
+        qDebug() << "Error: loadAllImages(): d is no object";
         return QList<QUrl>();
     }
 
