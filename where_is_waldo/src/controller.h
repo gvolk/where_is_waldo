@@ -36,7 +36,10 @@ private:
     GuiController *gc;
     DataProvider *dp;
     Feature *f;
-    CPU_Classifier* c_class;
+    CPU_Classifier* c1_class;
+    CPU_Classifier* c2_class;
+    CPU_Classifier* c3_class;
+
     void initSlots();
 
 public slots:
