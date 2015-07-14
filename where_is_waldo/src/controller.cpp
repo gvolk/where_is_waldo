@@ -64,6 +64,11 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
 
     //TODO
+    // take new method
+    // create S s1 and set s1.path = filename. (some for s2).
+}
+
+vector<pair<Vec2f, Vec2f> > Controller::GetRefPoints(S s1, S s2, QPoint top, QPoint bottom) {
     /**
      * the following part only work for a special set of picture.
      * these are the pictures in the image dir of the project.
@@ -84,30 +89,55 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
      * So these files are not included in any public git repositories.
      *
      */
+    vector<pair<Vec2f, Vec2f> > result;
+
     string tmp = "camera_loading/test.nvm";
     const char* filename = tmp.c_str();
 
     // Load file paths.
     vector<S> paths = LoadFilenamesFromFile(filename);
+    signed int index1 = -1;
+    signed int index2 = -1;
+    for (unsigned int i = 0; i < paths.size(); i++) {
+        if (paths[i].path == s1.path) {
+            index1 = i;
+        } else if (paths[i].path == s2.path) {
+            index2 = i;
+        }
+
+        if (index1 != -1 && index2 != -1) {
+            break;
+        }
+    }
+
+    if (index1 == -1 || index2 == -1) {
+        return vector<pair<Vec2f, Vec2f> >();
+    }
 
     // Load camera data.
     vector<pair<CameraDataf, CameraPoseDataf> > cameraData =
                 LoadCamerasFromFile(filename);
 
     // Pick to cameras
-    CameraDataf cam1 = cameraData[0].first;
+    /*CameraDataf cam1 = cameraData[0].first;
     CameraPoseDataf pose1 = cameraData[0].second;
     CameraDataf cam2 = cameraData[12].first;
-    CameraPoseDataf pose2 = cameraData[12].second;
+    CameraPoseDataf pose2 = cameraData[12].second;*/
+    CameraDataf cam1 = cameraData[index1].first;
+    CameraPoseDataf pose1 = cameraData[index1].second;
+    CameraDataf cam2 = cameraData[index2].first;
+    CameraPoseDataf pose2 = cameraData[index2].second;
 
     // === Project a point from one camera to the other ===
-    Vec2f image1Point(cam1.ImageSize / 2); // Pick a point at the center of the image
+    //Vec2f image1Point(cam1.ImageSize / 2); // Pick a point at the center of the image
+    Vec2f image1PointTop(top.x(), top.y());
+    Vec2f image1PointBottom(bottom.x(), bottom.y());
 
     // Process several depths
     for (float d = 0.4f; d <= 1.6f; d += 0.3f)
     {
         // Transform point to viewspace vector
-        Vec3f cam1Dir = cam1.GetViewspaceDirection(image1Point);
+        Vec3f cam1Dir = cam1.GetViewspaceDirection(image1PointTop);
         // Transform to worldspace ray
         Rayf worldRay = pose1.GetWorldspaceRay(cam1Dir);
 
@@ -119,13 +149,37 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         // Transform to second camera's viewspace
         Vec3f cam2Dir = pose2.GetViewspaceDirectionFromPoint(worldPoint);
         // Transform to second image
-        Vec2f image2Point = cam2.GetImagePosition(cam2Dir);
+        Vec2f image2PointTop = cam2.GetImagePosition(cam2Dir);
 
         // Output results
-        cout << "Center pixel of first image (" << image1Point << ") "
-                << "with depth " << d << " corresponds to (" << image2Point
+        cout << "Center pixel of first image (" << image1PointTop << ") "
+                << "with depth " << d << " corresponds to (" << image2PointTop
                 << ") on second image." << endl;
+
+        // Transform point to viewspace vector
+        cam1Dir = cam1.GetViewspaceDirection(image1PointBottom);
+        // Transform to worldspace ray
+        worldRay = pose1.GetWorldspaceRay(cam1Dir);
+
+        // Pick a point on the ray according to depth
+        worldPoint = worldRay.Origin + worldRay.Direction * d;
+        // ATTENTION: The depth is interpreted along the normalized ray direction, not along the principal camera axis!
+        // Maybe you have to change this.
+
+        // Transform to second camera's viewspace
+        cam2Dir = pose2.GetViewspaceDirectionFromPoint(worldPoint);
+        // Transform to second image
+        Vec2f image2PointBottom = cam2.GetImagePosition(cam2Dir);
+
+        // Output results
+        cout << "Center pixel of first image (" << image1PointBottom << ") "
+                << "with depth " << d << " corresponds to (" << image2PointBottom
+                << ") on second image." << endl;
+
+        result.push_back(make_pair(image2PointTop, image2PointBottom));
     }
+
+    return result;
 }
 
 vector<S> Controller::LoadFilenamesFromFile(const char* filename) {

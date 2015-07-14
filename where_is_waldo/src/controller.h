@@ -31,6 +31,7 @@ public:
     int run();
     vector<S> LoadFilenamesFromFile(const char* filename);
     vector<pair<CameraDataf, CameraPoseDataf> > LoadCamerasFromFile(const char* filename);
+    vector<pair<Vec2f, Vec2f> > GetRefPoints(S s1, S s2, QPoint top, QPoint bottom);
 
 private:
     GuiController *gc;
