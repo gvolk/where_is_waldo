@@ -1,5 +1,6 @@
 #ignore Debug dir
 Debug/
+*.user
 
 # Compiled Object files
 *.slo
