@@ -367,8 +367,6 @@ void GuiController::loadData(TrainingData new_data, QList<QUrl> new_images, QLis
     all_training_images = new_images;
     waldos = new_waldos;
 
-    qDebug() << data.area1;
-
     window->updateList(all_training_images);
 
     displayImage();
