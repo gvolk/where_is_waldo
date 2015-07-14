@@ -5,15 +5,20 @@
 #include <cmath>
 #include "feature.h"
 
-#define EPOCHS 10000
+#define EPOCHS 100
 #define LEARN_CONST .0001
 
+
+//#define EPOCHS 100
+//#define LEARN_CONST .0001
 
 class CPU_Classifier
 {
 
 private:
     double* beta;
+
+    double sigmoid(double z);
 
     double find_z( feature_data* training_data, int idx);
 

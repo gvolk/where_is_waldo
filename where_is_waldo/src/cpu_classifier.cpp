@@ -3,6 +3,9 @@
 CPU_Classifier::CPU_Classifier()
 {
     beta = new double[FEAT_LEN];
+    for(int i = 0; i < FEAT_LEN; i++) {
+        beta[i] =0;
+    }
 }
 
 double CPU_Classifier::find_z(feature_data* training_data, int idx) {
@@ -19,6 +22,11 @@ void CPU_Classifier::update_betaj(double* gradient) {
     }
 }
 
+double CPU_Classifier::sigmoid(double z)
+{
+    return (1 / (1 + exp(-z)));
+}
+
 void CPU_Classifier::train(feature_data* training_data) {
     for(int i = 0; i < EPOCHS; i++) {
         double gradient[FEAT_LEN] = {};
@@ -26,8 +34,9 @@ void CPU_Classifier::train(feature_data* training_data) {
         for(int k = 0; k < training_data->num_pix_features; k++) {
             int output = training_data->labels[k];
             double z = find_z(training_data, k);
+            double prob_y = sigmoid(z);
             for(int j = 0; j < FEAT_LEN; j++) {
-                gradient[j] += (double)training_data->features[k*FEAT_LEN+j]*(output - 1 / (1 + exp(-z)));
+                gradient[j] += (double)training_data->features[k*FEAT_LEN+j]*(output - prob_y);
             }
         }
         update_betaj(gradient);
@@ -35,10 +44,10 @@ void CPU_Classifier::train(feature_data* training_data) {
 }
 
 int* CPU_Classifier::predict(feature_data* test_data) {
-    int labels[test_data->num_pix_features] = {};
+    int* labels = (int*)malloc(test_data->num_pix_features*sizeof(int));
     for(int i = 0; i < test_data->num_pix_features; i++) {
         double z = find_z(test_data, i);
-        double prob_y = 1 / (1 + exp(-z));
+        double prob_y = sigmoid(z);
         int estimated_class;
         if(prob_y > 0.5) estimated_class = 1;
         else estimated_class = 0;
