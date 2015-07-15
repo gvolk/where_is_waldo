@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include "feature.h"
+#include "../src/gpu_classifier.h"
 
 #define EPOCHS 100
 #define LEARN_CONST .00001
@@ -39,11 +40,9 @@ public:
     //returns integer array of labels
     int* predict( feature_data* test_data);
     int* predict_cpu( feature_data* test_data);
-    int* predict_gpu( feature_data* test_data);
 
     void train(feature_data* train_data);
     void train_cpu(feature_data* train_data);
-    void train_gpu(feature_data* train_data);
 
     void test_classification(feature_data* test_data, feature_data* train_data);
 

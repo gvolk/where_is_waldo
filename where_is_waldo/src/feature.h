@@ -9,7 +9,7 @@
 struct feature_data{
     int num_pix_features;
     float* features;
-    float* labels;
+    int* labels;
 };
 
 class Feature

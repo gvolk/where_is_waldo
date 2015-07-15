@@ -25,7 +25,7 @@ feature_data* Feature::createSingleFeature(int width, int heigth, QPainterPath a
     int numpix = width * heigth;
     feature_data* tmpdata = new feature_data();
     tmpdata->features = new float[numpix * FEAT_LEN];
-    tmpdata->labels = new float[numpix];
+    tmpdata->labels = new int[numpix];
     tmpdata->num_pix_features = numpix;
     int x=0,y=0,pixel_idx=0,feature_idx=0;
     float* img;
