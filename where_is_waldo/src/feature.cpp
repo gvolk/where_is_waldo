@@ -3,6 +3,13 @@
 Feature::Feature(TrainingData* tdata)
 {
     data = tdata;
+    featurefile = REF_IMG;
+}
+
+Feature::Feature(TrainingData* tdata, const char* file)
+{
+    data = tdata;
+    featurefile  = file;
 }
 
 void Feature::createFeatures()
@@ -23,7 +30,7 @@ feature_data* Feature::createSingleFeature(int width, int heigth, QPainterPath a
     int x=0,y=0,pixel_idx=0,feature_idx=0;
     float* img;
 
-    ppm::readPPM(REF_IMG, width, heigth, &img);
+    ppm::readPPM(featurefile, width, heigth, &img);
 
     for(int i = 0; i < numpix; i++)
     {

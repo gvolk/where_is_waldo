@@ -6,7 +6,7 @@
 #include "feature.h"
 
 #define EPOCHS 100
-#define LEARN_CONST .0001
+#define LEARN_CONST .00001
 
 
 //#define EPOCHS 100

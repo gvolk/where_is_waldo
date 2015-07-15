@@ -27,20 +27,35 @@ double CPU_Classifier::sigmoid(double z)
     return (1 / (1 + exp(-z)));
 }
 
-void CPU_Classifier::train(feature_data* training_data) {
+void CPU_Classifier::train(feature_data* training_data)
+{
+    int correct=0;
+    double lik;
     for(int i = 0; i < EPOCHS; i++) {
         double gradient[FEAT_LEN] = {};
-
+        lik =0;
+        correct=0;
         for(int k = 0; k < training_data->num_pix_features; k++) {
             int output = training_data->labels[k];
             double z = find_z(training_data, k);
             double prob_y = sigmoid(z);
+            if(prob_y > 0.5 && training_data->labels[k] == 1)
+                correct++;
             for(int j = 0; j < FEAT_LEN; j++) {
                 gradient[j] += (double)training_data->features[k*FEAT_LEN+j]*(output - prob_y);
             }
+
         }
+
+        //qDebug() << ":" << beta[0]<< ":" << beta[1]<< ":" << beta[2]<< ":" << beta[3]<< ":" << beta[4]<< ":" << beta[5]<< ":" << beta[6]<< ":" << beta[7]<< ":" << beta[8] << "---- lik:" << lik;
+
+
         update_betaj(gradient);
+
+        //qDebug() << ":" << beta[0]<< ":" << betas[1]<< ":" << betas[2]<< ":" << betas[3]<< ":" << betas[4]<< ":" << betas[5]<< ":" << betas[6]<< ":" << betas[7]<< ":" << betas[8] << "---- cor:" << betas[9];
+
     }
+
 }
 
 int* CPU_Classifier::predict(feature_data* test_data) {

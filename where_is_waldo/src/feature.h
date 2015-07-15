@@ -16,10 +16,12 @@ class Feature
 {
 public:
     Feature(TrainingData*);
+    Feature(TrainingData*, const char*);
     void createFeatures();
     feature_data* getFeature(int nr);
 
 private:
+    const char* featurefile;
     feature_data* createSingleFeature(int width, int height, QPainterPath area);
     TrainingData* data;
     feature_data* feature1;

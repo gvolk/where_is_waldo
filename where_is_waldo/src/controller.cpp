@@ -54,6 +54,20 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     }
     qDebug() << f->getFeature(1)->labels[0];
 
+
+    Feature* f2 = new Feature(data, "training_image_2.ppm");
+    f2->createFeatures();
+
+    c1_class->train(f->getFeature(1));
+    c1_class->test_classification(f2->getFeature(1), f->getFeature(1));
+
+    c2_class->train(f->getFeature(2));
+    c2_class->test_classification(f2->getFeature(2), f->getFeature(2));
+
+    c3_class->train(f->getFeature(3));
+    c3_class->test_classification(f2->getFeature(3), f->getFeature(3));
+
+    /*
     c1_class->train(f->getFeature(1));
     c1_class->test_classification(f->getFeature(1), f->getFeature(1));
 
@@ -62,7 +76,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 
     c3_class->train(f->getFeature(3));
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
-
+        */
     //TODO
     // take new method
     // create S s1 and set s1.path = filename. (some for s2).
