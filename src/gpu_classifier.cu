@@ -8,7 +8,7 @@
  ============================================================================
  */
 #include "gpu_classifier.h"
-#include "PPM.hh"
+
 
 #define MAX_THREADS 512
 
