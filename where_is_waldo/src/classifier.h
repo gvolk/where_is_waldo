@@ -1,5 +1,5 @@
-#ifndef CPU_CLASSIFIER_H
-#define CPU_CLASSIFIER_H
+#ifndef LOGREGCLASSIFIER_H
+#define LOGREGCLASSIFIER_H
 
 
 #include <cmath>
@@ -8,15 +8,21 @@
 #define EPOCHS 100
 #define LEARN_CONST .00001
 
+#define CPU_MODE true
+#define GPU_MODE false
+
 
 //#define EPOCHS 100
 //#define LEARN_CONST .0001
 
-class CPU_Classifier
+class LogRegClassifier
 {
 
 private:
-    double* beta;
+    bool mode_cpu;
+
+    double* beta_cpu;
+    double* beta_gpu;
 
     double sigmoid(double z);
 
@@ -28,14 +34,20 @@ private:
 
 
 public:
-    CPU_Classifier();
+    LogRegClassifier(bool cpu_mode);
 
     //returns integer array of labels
     int* predict( feature_data* test_data);
+    int* predict_cpu( feature_data* test_data);
+    int* predict_gpu( feature_data* test_data);
 
     void train(feature_data* train_data);
+    void train_cpu(feature_data* train_data);
+    void train_gpu(feature_data* train_data);
 
     void test_classification(feature_data* test_data, feature_data* train_data);
+
+    void set_mode(bool cpu_mode);
 
 
 };

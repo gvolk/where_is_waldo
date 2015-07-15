@@ -1,6 +1,10 @@
 - Feature Klasse (mit suchbereich, anfangs ganzes bild)
-- Classifier
+- Classifier, GPU
 
-- Zeug abspeichern
-- Zeug laden
-- Gauss
+- Gauss testen
+- Bewertung eines Matches (korrekt klassifizierte Pixel * Gewicht von Gauss)
+
+- Labels von Refernzbild auf gemaptes Bild
+
+- Anzeigemöglichkeit von gefunden Matches / Waldos
+
