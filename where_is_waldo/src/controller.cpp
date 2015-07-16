@@ -282,5 +282,6 @@ vector<pair<CameraDataf, CameraPoseDataf> > Controller::LoadCamerasFromFile(
 void Controller::load()
 {
     gc->loadData(dp->loadSelectedWaldo(), dp->loadAllImages(), dp->loadMarkedTrainingData());
+    gc->displayImage();
 }
 

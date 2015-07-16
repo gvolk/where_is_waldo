@@ -1,6 +1,6 @@
 #ignore Debug dir
 Debug/
-*.user
+where_is_waldo/where_is_waldo.pro.user
 
 # Compiled Object files
 *.slo

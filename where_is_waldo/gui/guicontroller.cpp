@@ -77,7 +77,12 @@ void GuiController::displayImage()
     }
     else if(state == FIND_WALDO)
     {
-        //TODO implement also show rect of found and marked waldo
+        QPixmap q(REF_IMG);
+        window->setQPixmap(q);
+        fillPath(data.area1, QColor(255,0,0,128));
+        fillPath(data.area2, QColor(0,255,0,128));
+        fillPath(data.area3, QColor(0,0,255,128));
+        window->updateAll();
     }
 }
 
