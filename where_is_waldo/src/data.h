@@ -8,6 +8,8 @@
 //#define REF_AREA "training_areas.jpg"
 #define REF_AREA "training_areas.ppm"
 
+#define GAUSS_AREA "gauss_areas.ppm"
+
 struct TrainingData{
     QUrl file;
     int orig_img_width;

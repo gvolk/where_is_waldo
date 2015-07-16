@@ -3,6 +3,7 @@
 
 #include "data.h"
 #include "../src/PPM.hh"
+#include "../src/where_is_waldo.h"
 
 #define FEAT_LEN 9
 
