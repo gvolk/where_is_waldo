@@ -6,8 +6,8 @@
 #include "feature.h"
 #include "../src/gpu_classifier.h"
 
-#define EPOCHS 100
-#define LEARN_CONST .00001
+#define EPOCHS 500
+#define LEARN_CONST .0001
 
 #define CPU_MODE true
 #define GPU_MODE false

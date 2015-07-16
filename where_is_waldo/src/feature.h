@@ -24,6 +24,7 @@ public:
 private:
     const char* featurefile;
     feature_data* createSingleFeature(int width, int height, QPainterPath area);
+    void normalizeFeature(int feature_idx, feature_data* features);
     TrainingData* data;
     feature_data* feature1;
     feature_data* feature2;

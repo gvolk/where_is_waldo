@@ -74,8 +74,42 @@ feature_data* Feature::createSingleFeature(int width, int heigth, QPainterPath a
         }
     }
 
+    for(int i=0; i<FEAT_LEN; i++)
+    {
+        normalizeFeature(i,tmpdata);
+    }
+
     return tmpdata;
 }
+
+void Feature::normalizeFeature(int feature_idx, feature_data* features)
+{
+    float sum, min=10000, max=0, mean;
+    float feature;
+    int idx;
+    for(int i=0; i< features->num_pix_features; i++)
+    {
+        idx = i*FEAT_LEN + feature_idx;
+        feature = features->features[idx];
+        if(feature < min)
+        {
+            min = feature;
+        }
+        if(feature > max)
+        {
+            max = feature;
+        }
+        sum += feature;
+    }
+    mean = sum / features->num_pix_features;
+
+    for(int i=0; i< features->num_pix_features; i++)
+    {
+        feature = features->features[idx];
+        features->features[idx] = (feature - mean)/(max-min);
+    }
+}
+
 
 feature_data* Feature::getFeature(int nr){
     switch(nr)
