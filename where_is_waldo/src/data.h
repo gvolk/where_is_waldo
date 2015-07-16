@@ -29,4 +29,5 @@ struct WaldoMarker{
     int sub_img_heigth;
 };
 
+
 #endif // DATA_H

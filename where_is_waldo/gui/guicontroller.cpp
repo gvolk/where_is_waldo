@@ -16,6 +16,8 @@ GuiController::GuiController(int & argc, char ** argv)
 void GuiController::initSlots()
 {
     QObject::connect(window->getMainWindow()->listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(displayImage()));
+    QObject::connect(window->getMainWindow()->listWidget_marked, SIGNAL(itemSelectionChanged()), this, SLOT(displayMarkedWaldo()));
+    QObject::connect(window->getMainWindow()->listWidget_found, SIGNAL(itemSelectionChanged()), this, SLOT(displayFoundWaldo()));
     QObject::connect(window->getMainWindow()->subImageButton, SIGNAL(clicked()), this, SLOT(enterSubImage()));
     QObject::connect(window->getMainWindow()->areaButton, SIGNAL(clicked()), this, SLOT(enterArea()));
     QObject::connect(window->getMainWindow()->topButton, SIGNAL(clicked()), this, SLOT(enterTopBottom()));
@@ -56,7 +58,6 @@ void GuiController::processMenuAction(QAction *action)
 }
 
 
-
 void GuiController::processDroppedImates(QList<QUrl> urls)
 {
     QDir dir = QDir::currentPath();
@@ -67,6 +68,15 @@ void GuiController::processDroppedImates(QList<QUrl> urls)
     }
 
     window->updateList(all_training_images);
+}
+
+void GuiController::markedWaldosChanged()
+{
+    QList<QUrl> *list = new QList<QUrl>();
+    foreach (const WaldoMarker &waldo, waldos) {
+        list->append(QUrl(waldo.file.toString()));
+    }
+    window->updateMarkedList(*list);
 }
 
 void GuiController::displayImage()
@@ -84,6 +94,51 @@ void GuiController::displayImage()
         fillPath(data.area3, QColor(0,0,255,128));
         window->updateAll();
     }
+}
+
+void GuiController::displayMarkedWaldo()
+{
+    if(window->getMainWindow()->listWidget_marked->selectedItems().isEmpty())
+    {
+        return;
+    }
+    QString img = window->getMainWindow()->listWidget_marked->selectedItems().first()->text();
+    QPixmap q(img);
+    QPainter painter(&q);
+    QPen Red((QColor(255,0,0)),3);
+    painter.setPen(Red);
+    foreach (const WaldoMarker &waldo, waldos) {
+        if(waldo.file.toString() == img)
+        {
+            painter.drawRect(waldo.sub_img_start.x(), waldo.sub_img_start.y(), waldo.sub_img_width, waldo.sub_img_heigth);
+        }
+    }
+
+    window->setQPixmap(q);
+    window->updateAll();
+}
+
+void GuiController::displayFoundWaldo()
+{
+    if(window->getMainWindow()->listWidget_found->selectedItems().isEmpty())
+    {
+        return;
+    }
+
+    QString img = window->getMainWindow()->listWidget_found->selectedItems().first()->text();
+    QPixmap q(img);
+    QPainter painter(&q);
+    QPen Red((QColor(255,0,0)),3);
+    painter.setPen(Red);
+    foreach (const WaldoMarker &waldo, found_waldos) {
+        if(waldo.file.toString() == img)
+        {
+            painter.drawRect(waldo.sub_img_start.x(), waldo.sub_img_start.y(), waldo.sub_img_width, waldo.sub_img_heigth);
+        }
+    }
+
+    window->setQPixmap(q);
+    window->updateAll();
 }
 
 void GuiController::enterFind()
@@ -354,6 +409,9 @@ void GuiController::processFinishState()
         QUrl file = QUrl(window->getMainWindow()->listWidget->selectedItems().first()->text());
         current_waldo.file = file;
 
+        waldos.append(current_waldo);
+        markedWaldosChanged();
+
         emit marked_waldos(waldos);
     }
     else if(state == FIND_WALDO)
@@ -373,6 +431,7 @@ void GuiController::loadData(TrainingData new_data, QList<QUrl> new_images, QLis
     waldos = new_waldos;
 
     window->updateList(all_training_images);
+    markedWaldosChanged();
 
     displayImage();
     enterFind();

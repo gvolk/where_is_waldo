@@ -25,6 +25,8 @@ public:
 
 public slots:
     void displayImage();
+    void displayMarkedWaldo();
+    void displayFoundWaldo();
     void enterSubImage();
     void processPosition(bool, QPoint);
     void processMouseMoveEvent(QPoint);
@@ -56,7 +58,9 @@ private:
     TrainingData data;
     QList<QUrl> all_training_images;
     QList<WaldoMarker> waldos;
+    QList<WaldoMarker> found_waldos;
     WaldoMarker current_waldo;
+    void markedWaldosChanged();
 };
 
 

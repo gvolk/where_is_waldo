@@ -23,6 +23,8 @@ public:
     QPixmap getOrigQPixmap();
     void updateAll();
     void updateList(QList <QUrl>);
+    void updateMarkedList(QList <QUrl> urls);
+    void updateFoundList(QList <QUrl> urls);
     ~MainWindow();
 
 

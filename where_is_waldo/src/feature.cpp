@@ -77,5 +77,6 @@ feature_data* Feature::getFeature(int nr){
         case 1: return feature1;
         case 2: return feature2;
         case 3: return feature3;
+        default: return feature1;
     }
 }
