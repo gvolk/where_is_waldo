@@ -331,8 +331,8 @@ void GuiController::processPosition(bool started, QPoint pos)
         }
         else
         {
-            current_waldo.sub_img_width = pos.x() - data.sub_img_start.x();
-            current_waldo.sub_img_heigth = pos.y() - data.sub_img_start.y();
+            current_waldo.sub_img_width = pos.x() - current_waldo.sub_img_start.x();
+            current_waldo.sub_img_heigth = pos.y() - current_waldo.sub_img_start.y();
         }
     }
 }
@@ -410,6 +410,7 @@ void GuiController::processFinishState()
         current_waldo.file = file;
 
         waldos.append(current_waldo);
+        current_waldo = WaldoMarker();
         markedWaldosChanged();
 
         emit marked_waldos(waldos);
