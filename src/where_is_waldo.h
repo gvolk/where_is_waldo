@@ -10,6 +10,6 @@ using std::exception;
 using std::string;
 
 
-int run(string imagePath, string outputPath);
+int doGauss(const char* imagePath, const char* outputPath);
 float *cpuReciprocal(float *data, unsigned size);
 float *gpuReciprocal(float *data, unsigned size);
