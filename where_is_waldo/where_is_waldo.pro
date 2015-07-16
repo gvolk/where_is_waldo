@@ -14,8 +14,10 @@ TEMPLATE = app
 
 # CUDA sources
 CUDA_SOURCES += ../src/where_is_waldo.cu \
+                ../src/gpu_classifier.cu \
                 ../src/PPM.cpp
 CUDA_HEADERS += ../src/where_is_waldo.h \
+                ../src/gpu_classifier.h \
                 ../src/PPM.hh
 
 SOURCES += main.cpp\
@@ -25,7 +27,7 @@ SOURCES += main.cpp\
     src/controller.cpp \
     src/dataprovider.cpp \
     src/feature.cpp \
-    src/cpu_classifier.cpp
+    src/classifier.cpp
 
 HEADERS  += gui/mainwindow.h \
     gui/guicontroller.h \
@@ -35,7 +37,7 @@ HEADERS  += gui/mainwindow.h \
     src/data.h \
     src/dataprovider.h \
     src/feature.h \
-    src/cpu_classifier.h
+    src/classifier.h
 
 
 

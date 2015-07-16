@@ -35,6 +35,24 @@ void MainWindow::updateList(QList <QUrl> urls)
     }
 }
 
+void MainWindow::updateMarkedList(QList <QUrl> urls)
+{
+    ui->listWidget_marked->clear();
+    foreach (const QUrl &url, urls) {
+        const QString &fileName = url.toString();
+        ui->listWidget_marked->addItem(fileName);
+    }
+}
+
+void MainWindow::updateFoundList(QList <QUrl> urls)
+{
+    ui->listWidget_found->clear();
+    foreach (const QUrl &url, urls) {
+        const QString &fileName = url.toString();
+        ui->listWidget_found->addItem(fileName);
+    }
+}
+
 Ui::MainWindow* MainWindow::getMainWindow()
 {
     return ui;

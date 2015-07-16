@@ -13,7 +13,7 @@
 #include "feature.h"
 #include "dataprovider.h"
 #include "../gui/guicontroller.h"
-#include "cpu_classifier.h"
+#include "classifier.h"
 
 using namespace std;
 using namespace base;
@@ -37,7 +37,10 @@ private:
     GuiController *gc;
     DataProvider *dp;
     Feature *f;
-    CPU_Classifier* c_class;
+    LogRegClassifier* c1_class;
+    LogRegClassifier* c2_class;
+    LogRegClassifier* c3_class;
+
     void initSlots();
 
 public slots:
