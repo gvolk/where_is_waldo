@@ -18,15 +18,15 @@
  *  CLASSIFIER DEFINES
 */
 
-#define EPOCHS 500
-#define LEARN_CONST .0001
+//#define EPOCHS 1000
+//#define LEARN_CONST .0001
 
 #define CPU_MODE true
 #define GPU_MODE false
 
 
-//#define EPOCHS 100
-//#define LEARN_CONST .0001
+#define EPOCHS 1000
+#define LEARN_CONST .001
 
 
 /*

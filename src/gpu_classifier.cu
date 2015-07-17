@@ -17,7 +17,7 @@ static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t
 #define CUDA_CHECK_RETURN(value) CheckCudaErrorAux(__FILE__,__LINE__, #value, value)
 
 
-__global__ void trainKernel(int* labels, float* features, int num_features, float *beta)
+__global__ void trainKernel(int* labels, float* features, int num_features, double *beta)
 {
     /*int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y;
@@ -50,7 +50,7 @@ __global__ void trainKernel(int* labels, float* features, int num_features, floa
 }
 
 //label and features are input variables, beta is the output variable
-int train_gpu(int* labels, float* features, int num_features, float *beta)
+int train_gpu(int* labels, float* features, int num_features, double *beta)
 {
    /* float* gpufeatures;
     int* gpulabels;
@@ -112,10 +112,10 @@ int train_gpu(int* labels, float* features, int num_features, float *beta)
     return 0;
 }
 
-__global__ void predictKernel(float* features, float* beta, int num_features, int* predictions)
+__global__ void predictKernel(float* features, double* beta, int num_features, int* predictions)
 {
     int x = blockIdx.x * THREADS_PER_BLOCK + threadIdx.x;
-    float z, proby;
+    double z, proby;
     int pos;
 
     if (x  >= num_features) {
@@ -128,7 +128,7 @@ __global__ void predictKernel(float* features, float* beta, int num_features, in
             z += beta[j] * features[pos + j];
     }
 
-    proby = (1.0f / (1.0f + expf(-z)));
+    proby = (1.0f / (1.0f + exp(-z)));
 
     if(proby > 0.5)
     {
@@ -142,10 +142,10 @@ __global__ void predictKernel(float* features, float* beta, int num_features, in
 }
 
 //features, beta and num_features are the input variables, predictions is the output variable
-int predict_gpu(float* features, float* beta, int num_features, int* predictions)
+int predict_gpu(float* features, double* beta, int num_features, int* predictions)
 {
     float* gpufeatures;
-    float* gpubeta;
+    double* gpubeta;
     int* gpupredictions;
 
     std::cout << "starting gpu prediction\n";
@@ -158,8 +158,8 @@ int predict_gpu(float* features, float* beta, int num_features, int* predictions
     cudaMalloc((void**) &gpufeatures, num_features * FEAT_LEN * sizeof(float));
     cudaMemcpy(gpufeatures, features, num_features * FEAT_LEN * sizeof(float), cudaMemcpyHostToDevice);
 
-    cudaMalloc((void**) &gpubeta, FEAT_LEN * sizeof(float));
-    cudaMemcpy(gpubeta, beta,     FEAT_LEN * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void**) &gpubeta, FEAT_LEN * sizeof(double));
+    cudaMemcpy(gpubeta, beta,     FEAT_LEN * sizeof(double), cudaMemcpyHostToDevice);
 
     cudaMalloc((void**) &gpupredictions, num_features * sizeof(int));
     cudaMemset(gpupredictions, 0,        num_features * sizeof(int));
