@@ -80,9 +80,32 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     //TODO
     // take new method
     // create S s1 and set s1.path = filename. (some for s2).
+    vector<pair<QPoint, QPoint> > tmp;
+    S s1;
+    s1.path = "training_image.ppm";
+    S s2;
+    s2.path = "training_image_2.ppm";
+    tmp = GetRefPoints(s1, s2, data->top, data->bottom);
+
+    for (int i = 0; i < tmp.size(); i++) {
+        QPoint top = tmp[i].first;
+        QPoint bottom = tmp[i].second;
+
+        float diff = GetDiffFactor(data->top, data->bottom, top, bottom);
+
+        // now
+        // diff = diff * 2; // i.e. to increase test bild size.
+    }
 }
 
-vector<pair<Vec2f, Vec2f> > Controller::GetRefPoints(S s1, S s2, QPoint top, QPoint bottom) {
+float Controller::GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2) {
+    float dist1 = bottom1.y() - top1.y();
+    float dist2 = bottom2.y() - top2.y();
+
+    return dist2/dist1;
+}
+
+vector<pair<QPoint, QPoint> > Controller::GetRefPoints(S s1, S s2, QPoint top, QPoint bottom) {
     /**
      * the following part only work for a special set of picture.
      * these are the pictures in the image dir of the project.
@@ -103,7 +126,7 @@ vector<pair<Vec2f, Vec2f> > Controller::GetRefPoints(S s1, S s2, QPoint top, QPo
      * So these files are not included in any public git repositories.
      *
      */
-    vector<pair<Vec2f, Vec2f> > result;
+    vector<pair<QPoint, QPoint> > result;
 
     string tmp = "camera_loading/test.nvm";
     const char* filename = tmp.c_str();
@@ -133,10 +156,6 @@ vector<pair<Vec2f, Vec2f> > Controller::GetRefPoints(S s1, S s2, QPoint top, QPo
                 LoadCamerasFromFile(filename);
 
     // Pick to cameras
-    /*CameraDataf cam1 = cameraData[0].first;
-    CameraPoseDataf pose1 = cameraData[0].second;
-    CameraDataf cam2 = cameraData[12].first;
-    CameraPoseDataf pose2 = cameraData[12].second;*/
     CameraDataf cam1 = cameraData[index1].first;
     CameraPoseDataf pose1 = cameraData[index1].second;
     CameraDataf cam2 = cameraData[index2].first;
@@ -190,7 +209,14 @@ vector<pair<Vec2f, Vec2f> > Controller::GetRefPoints(S s1, S s2, QPoint top, QPo
                 << "with depth " << d << " corresponds to (" << image2PointBottom
                 << ") on second image." << endl;
 
-        result.push_back(make_pair(image2PointTop, image2PointBottom));
+        QPoint top2;
+        top2.setX(image2PointTop[0]);
+        top2.setY(image2PointTop[1]);
+
+        QPoint bottom2;
+        bottom2.setX(image2PointBottom[0]);
+        bottom2.setY(image2PointBottom[1]);
+        result.push_back(make_pair(top2, bottom2));
     }
 
     return result;
