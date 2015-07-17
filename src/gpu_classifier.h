@@ -15,8 +15,8 @@ using std::exception;
 using std::string;
 
 
-void train_gpu(int* , float* , int , double *);
+int train_gpu(int* , float* , int , float *);
 
-void predict_gpu(float* , double* , int , int* );
+int predict_gpu(float* , float* , int , int* );
 
 #endif // GPU_CLASSIFIER_H
