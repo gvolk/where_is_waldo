@@ -148,7 +148,7 @@ vector<pair<QPoint, QPoint> > Controller::GetRefPoints(S s1, S s2, QPoint top, Q
     }
 
     if (index1 == -1 || index2 == -1) {
-        return vector<pair<Vec2f, Vec2f> >();
+        return vector<pair<QPoint, QPoint> >();
     }
 
     // Load camera data.

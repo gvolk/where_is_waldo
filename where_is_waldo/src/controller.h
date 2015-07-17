@@ -19,7 +19,7 @@ using namespace std;
 using namespace base;
 
 struct S {
-    char path[512];
+    const char* path;
 };
 
 class Controller: public QObject
@@ -31,7 +31,7 @@ public:
     int run();
     vector<S> LoadFilenamesFromFile(const char* filename);
     vector<pair<CameraDataf, CameraPoseDataf> > LoadCamerasFromFile(const char* filename);
-    vector<pair<Vec2f, Vec2f> > GetRefPoints(S s1, S s2, QPoint top, QPoint bottom);
+    vector<pair<QPoint, QPoint> > GetRefPoints(S s1, S s2, QPoint top, QPoint bottom);
     float GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2);
 
 private:
