@@ -128,7 +128,7 @@ __global__ void predictKernel(float* features, double* beta, int num_features, i
             z += beta[j] * features[pos + j];
     }
 
-    proby = (1.0f / (1.0f + exp(-z)));
+    proby = (1.0 / (1.0 + exp(-z)));
 
     if(proby > 0.5)
     {
@@ -149,11 +149,6 @@ int predict_gpu(float* features, double* beta, int num_features, int* prediction
     int* gpupredictions;
 
     std::cout << "starting gpu prediction\n";
-
-    for(int i = 0; i< FEAT_LEN; i++)
-    {
-        std::cout << beta[i] << endl;
-    }
 
     cudaMalloc((void**) &gpufeatures, num_features * FEAT_LEN * sizeof(float));
     cudaMemcpy(gpufeatures, features, num_features * FEAT_LEN * sizeof(float), cudaMemcpyHostToDevice);

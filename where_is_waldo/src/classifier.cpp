@@ -102,12 +102,8 @@ int* LogRegClassifier::predict(feature_data* test_data)
         return predict_cpu(test_data);
     else
     {
-        return predict_cpu(test_data);
         int* labels = (int*)malloc(test_data->num_pix_features*sizeof(int));
-        //predict_gpu(test_data->features, beta_gpu, test_data->num_pix_features, labels);
-        qDebug() << beta_cpu[0] << beta_cpu[1] << beta_cpu[2] << beta_cpu[3] << beta_cpu[4] << beta_cpu[5] << beta_cpu[6] << beta_cpu[7];
         predict_gpu(test_data->features, beta_cpu, test_data->num_pix_features, labels);
-
         return labels;
     }
 }
