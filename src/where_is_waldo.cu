@@ -41,40 +41,40 @@ __global__ void gaussKernel(const float *_src, float *_dst, float *matrix, int w
 	float blurGreen = 0.f;
 	float blurBlue = 0.f;
 
-	for (int _y = -half; _y <= half; _y++) {
-		for (int _x = -half; _x <= half; _x++) {
-			int tmpX = x+_x;
-			int tmpY = y+_y;
+    for (int _y = -half; _y <= half; _y++) {
+        for (int _x = -half; _x <= half; _x++) {
+            int tmpX = x+_x;
+            int tmpY = y+_y;
 
-			if (tmpX >= w || tmpX < 0) {
-				tmpX = x;
-			}
+            if (tmpX >= w || tmpX < 0) {
+                tmpX = x;
+            }
 
-			if (tmpY >= h || tmpY < 0) {
-				tmpY = y;
-			}
+            if (tmpY >= h || tmpY < 0) {
+                tmpY = y;
+            }
 
-			int pos2 = tmpX * 3 + w * 3 * tmpY;
+            int pos2 = tmpX * 3 + w * 3 * tmpY;
 
-			float pixelRed = _src[pos2];
+            float pixelRed = _src[pos2];
 
-			float pixelGreen = _src[pos2+1];
+            float pixelGreen = _src[pos2+1];
 
-			float pixelBlue = _src[pos2+2];
+            float pixelBlue = _src[pos2+2];
 
-			int idx = (_y + half) * width + (_x + half);
-			float weight = matrix[idx];
+            int idx = (_y + half) * width + (_x + half);
+            float weight = matrix[idx];
 
-			blurRed += pixelRed * weight;
-			blurGreen += pixelGreen * weight;
-			blurBlue += pixelBlue * weight;
-		}
-	}
+            blurRed += pixelRed * weight;
+            blurGreen += pixelGreen * weight;
+            blurBlue += pixelBlue * weight;
+        }
+    }
 
 	int pos = x * 3 + w * 3 * y;
 	_dst[pos] = blurRed;
 	_dst[pos+1] = blurGreen;
-	_dst[pos+2] = blurBlue;
+    _dst[pos+2] = blurBlue;
 }
 
 

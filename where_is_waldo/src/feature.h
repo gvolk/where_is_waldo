@@ -5,7 +5,7 @@
 #include "../src/PPM.hh"
 #include "../src/where_is_waldo.h"
 
-#define FEAT_LEN 9
+
 
 struct feature_data{
     int num_pix_features;

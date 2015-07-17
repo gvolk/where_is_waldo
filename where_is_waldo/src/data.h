@@ -3,12 +3,7 @@
 #include <QApplication>
 #include <QtWidgets>
 
-//#define REF_IMG "training_image.jpg"
-#define REF_IMG "training_image.ppm"
-//#define REF_AREA "training_areas.jpg"
-#define REF_AREA "training_areas.ppm"
-
-#define GAUSS_AREA "gauss_areas.ppm"
+#include "defines.h"
 
 struct TrainingData{
     QUrl file;

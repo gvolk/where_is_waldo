@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "../where_is_waldo/src/defines.h"
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -13,8 +15,8 @@ using std::exception;
 using std::string;
 
 
-void train_gpu(int* labels, float* features, double *beta);
+void train_gpu(int* , float* , int , double *);
 
-void predict_gpu(float* features, double* beta, int* precitions);
+void predict_gpu(float* , double* , int , int* );
 
 #endif // GPU_CLASSIFIER_H

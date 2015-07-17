@@ -37,7 +37,8 @@ HEADERS  += gui/mainwindow.h \
     src/data.h \
     src/dataprovider.h \
     src/feature.h \
-    src/classifier.h
+    src/classifier.h \
+    src/defines.h
 
 
 
