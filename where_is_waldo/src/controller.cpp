@@ -155,7 +155,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         QPoint maxBottom(0, 0);
         QPoint minStart(tmpImg.width(), tmpImg.height());
 
-        for (int i = 0; i < topPoints.size(); i++) {
+        for (unsigned int i = 0; i < topPoints.size(); i++) {
             QPoint top = topPoints[i];
             QPoint bottom = bottomPoints[i];
             QPoint start = startPoints[i];
@@ -325,11 +325,15 @@ vector<S> Controller::LoadFilenamesFromFile(const char* filename) {
 
         S s;
 
+        char* path[512];
+
         // only path is relevant.
         float tmp;
-        sscanf(line.c_str(), "%s	%f %f %f %f %f %f %f %f", s.path, &tmp,
+        sscanf(line.c_str(), "%s	%f %f %f %f %f %f %f %f", path, &tmp,
                         &tmp, &tmp, &tmp, &tmp, &tmp, &tmp, &tmp);
         // now save path
+
+        s.path = path;
 
         result.push_back(s);
     }
