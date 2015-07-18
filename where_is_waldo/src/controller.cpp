@@ -154,7 +154,9 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         QPoint minTop(tmpImg.width(), tmpImg.height());
         QPoint maxBottom(0, 0);
         QPoint minStart(tmpImg.width(), tmpImg.height());
+        QPoint maxStart(0, 0);
 
+        float tmpScale = 0.f;
         for (unsigned int i = 0; i < topPoints.size(); i++) {
             QPoint top = topPoints[i];
             QPoint bottom = bottomPoints[i];
@@ -174,10 +176,23 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
             if (start.y() < minStart.y()) {
                 minStart.setY(start.y());
             }
+            if (start.x() > maxStart.x()) {
+                maxStart.setX(start.x());
+            }
+            if (start.y() > maxStart.y()) {
+                maxStart.setY(start.y());
+            }
+
+            tmpScale += bottom.y() - top.x();
         }
+
+        tmpScale /= topPoints.size();
 
         // we have now a minimum top.y and a bottom.y
         float diffY = maxBottom.y() - minTop.y();
+        if (maxStart.y()-minStart.y() > diffY) {
+            diffY = maxStart.y()-minStart.y();
+        }
 
         // now take a factor! sensible do not choose big.
         diffY = diffY * NOISE_FACTOR;
@@ -187,12 +202,20 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 
         float tmpQuotient = diffY / tmpDiffY;
 
+        float scaleFactor = tmpScale / tmpDiffY;
+
         float diffX = tmpDiffX * tmpQuotient;
+        if (maxStart.x()-minStart.x() > diffY) {
+            diffX = maxStart.x()-minStart.x();
+        }
 
         //save original heigth and width of image
 
         QRect rect(minStart.x(), minStart.y(), diffX, diffY);
         QPixmap cropped = tmpImg.copy(rect);
+
+        cropped.scaledToHeight(cropped.height() * scaleFactor);
+        cropped.scaledToWidth(cropped.width() * scaleFactor);
 
         QFile file(TMP_IMG);
         file.open(QIODevice::WriteOnly);
