@@ -9,106 +9,157 @@
  */
 #include "gpu_classifier.h"
 
-
-
 #define THREADS_PER_BLOCK 128
 
 static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t);
 #define CUDA_CHECK_RETURN(value) CheckCudaErrorAux(__FILE__,__LINE__, #value, value)
 
 
-__global__ void trainKernel(int* labels, float* features, int num_features, double *beta)
+__global__ void trainKernel(int* labels, float* features, int num_features, double *beta, double* gputmpbeta)
 {
-    /*int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y;
+    int x = blockIdx.x * THREADS_PER_BLOCK + threadIdx.x;
+    double z, proby;
+    int pos;
 
-    if (x >= FEAT_LEN || y >= num_features) {
+    if (x  >= num_features) {
         return;
     }
-    int pos = x + FEAT_LEN * y;
 
-    __shared__ float z;
-    __shared__ float proby;
+    pos = x * FEAT_LEN ;
 
-    __shared__ float update[FEAT_LEN];
-
-    for (int epoch = 0; epicg < EPOCHS; epoch++) {
-        z  = z + beta[x] * features[pos];
-
-        __syncthreads();
-
-        if(x == 0)
-            proby = (1 / (1 + exp(-z)));
-
-        __syncthreads();
-
-        update[x] =
+    for(int j = 0; j < FEAT_LEN; j++) {
+            z += beta[j] * (double)features[pos + j];
     }
 
-    */
+    proby = (1.0 / (1.0 + exp(-z)));
 
+    for(int j = 0; j < FEAT_LEN; j++) {
+        //save #num_features betas of the first feature then #num_features beats for the second for later reduce them
+        gputmpbeta[j * num_features + x] += (double) LEARN_CONST * ((double)features[pos + j]*(labels[x] - proby));
+    }
+
+}
+
+//reduce betas of one feature previously computed by trainKernel
+__global__ void reduceBetas( int num_features, int feature_beta_idx, double* gpuResultBeta1, double* gpuResultBeta2)
+{
+    int x = blockIdx.x * THREADS_PER_BLOCK + threadIdx.x;
+
+    if (x  >= num_features) {
+        return;
+    }
+
+    extern __shared__ float partialSum[];
+
+    int beta_idx = feature_beta_idx * num_features + x;
+
+    unsigned int t = threadIdx.x;
+
+    partialSum[t] = gpuResultBeta1[beta_idx];
+
+
+    for (unsigned int stride = THREADS_PER_BLOCK / 2; stride > 1; stride >>= 1) {
+        __syncthreads();
+        if (t < stride) {
+            partialSum[t] += partialSum[t+stride];
+        }
+    }
+
+    __syncthreads();
+
+    if (t == 0) {
+        gpuResultBeta2[feature_beta_idx * num_features + blockIdx.x] = partialSum[0] + partialSum[1];
+    }
 }
 
 //label and features are input variables, beta is the output variable
 int train_gpu(int* labels, float* features, int num_features, double *beta)
 {
-   /* float* gpufeatures;
+    float* gpufeatures;
     int* gpulabels;
+    double* gpuResultBeta1;
+    double* gpuResultBeta2;
     double* gpubeta;
+    int i, epochs;
+
+    for(i = 0;i<9;i++)
+    {
+        //cout << features[i] << " ";
+    }
 
     cudaMalloc((void**) &gpufeatures, num_features * FEAT_LEN * sizeof(float));
-    cudaMalloc((void**) &gpulabels, FEAT_LEN * sizeof(int));
-    cudaMalloc((void**) &gpubeta, FEAT_LEN * sizeof(double));
-
     cudaMemcpy(gpufeatures, features, num_features * FEAT_LEN * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(gpulabels, labels, FEAT_LEN * sizeof(int), cudaMemcpyHostToDevice);
 
-    cudaMemset(gpubeta, 0, FEAT_LEN * sizeof(double));
+    cudaMalloc((void**) &gpulabels, num_features * sizeof(int));
+    cudaMemcpy(gpulabels, labels,   num_features * sizeof(int), cudaMemcpyHostToDevice);
 
-    // BEGIN run kernel.
-    dim3 threadBlock(MAX_THREADS);
-    dim3 blockGrid(FEAT_LEN / MAX_THREADS + 1, num_features, 1);
+    cudaMalloc((void**) &gpubeta, FEAT_LEN * sizeof(double));
+    cudaMemcpy(gpubeta, beta,     FEAT_LEN * sizeof(double), cudaMemcpyHostToDevice);
 
-    // run gaussian blur kernel.
-    //std::cout<<"would execute kernerl. But skipping an using cpu part at the moment."<<std::endl;
-    trainKernel<<< blockGrid, threadBlock >>>(gpulabels, gpufeatures, num_features, gpubeta);
+    cudaMalloc((void**) &gpuResultBeta1, num_features * FEAT_LEN * sizeof(double));
+    cudaMemset(gpuResultBeta1, 0,        num_features * FEAT_LEN * sizeof(double));
 
-    */
+    cudaMalloc((void**) &gpuResultBeta2, num_features * FEAT_LEN * sizeof(double));
+    cudaMemset(gpuResultBeta2, 0,        num_features * FEAT_LEN * sizeof(double));
 
-    /*
-    for(int i = 0; i < EPOCHS; i++)
+    unsigned int numBlocks = num_features / THREADS_PER_BLOCK +1 ;
+
+    for(epochs = 0; epochs < EPOCHS; epochs++)
     {
-            double gradient[FEAT_LEN] = {};
-            for(int k = 0; k < num_features; k++) {
-                int output = labels[k];
+        // train one round to get all partial betas
+        trainKernel<<< numBlocks, THREADS_PER_BLOCK >>>(gpulabels, gpufeatures, num_features, gpubeta, gpuResultBeta1);
 
+        cudaThreadSynchronize();
 
-                //find z
-                double z = 0;
-                for(int i = 0; i < FEAT_LEN; i++) {
-                        z += beta[i] * features[k*FEAT_LEN+ i];
-                }
-
-                //calc sigmoid
-                double prob_y = (1 / (1 + exp(-z)));
-
-                for(int j = 0; j < FEAT_LEN; j++) {
-                    gradient[j] += (double)features[k*FEAT_LEN+j]*(output - prob_y);
-                }
-
+        double* result = new double[num_features * FEAT_LEN * sizeof(double)];
+        cudaMemcpy(result, gpuResultBeta1, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+        cout << "gpu_reduce: ";
+        double *sum = new double[FEAT_LEN];
+        cout << "gputrain:";
+        for (int j = 0; j < FEAT_LEN; j++)
+        {
+            for(i= 0; i < num_features; i++)
+            {
+                sum[j] += result[j*num_features + i];
             }
+            cout << sum[j] <<" ";
+        }
+         cout << endl;
 
-            //qDebug() << ":" << beta[0]<< ":" << beta[1]<< ":" << beta[2]<< ":" << beta[3]<< ":" << beta[4]<< ":" << beta[5]<< ":" << beta[6]<< ":" << beta[7]<< ":" << beta[8] << "---- lik:" << lik;
-            //qDebug()<<i;
 
-            //update beta
-            for(int i = 0; i < FEAT_LEN; i++) {
-                    beta[i] += LEARN_CONST * gradient[i];
-            }
+        // reduce all 9 betas for each feature
+        for(i= 0; i < FEAT_LEN; i++)
+        {
+            reduceBetas<<< numBlocks, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(num_features , i, gpuResultBeta1, gpuResultBeta2);
+        }
+        cudaThreadSynchronize();
+        for(i= 0; i < FEAT_LEN; i++)
+        {
+            reduceBetas<<< dim3(1), numBlocks, numBlocks * sizeof(double) >>>(num_features , i, gpuResultBeta2, gpuResultBeta1);
+        }
 
-            //qDebug() << ":" << beta[0]<< ":" << betas[1]<< ":" << betas[2]<< ":" << betas[3]<< ":" << betas[4]<< ":" << betas[5]<< ":" << betas[6]<< ":" << betas[7]<< ":" << betas[8] << "---- cor:" << betas[9];
+        cudaThreadSynchronize();
 
-   }*/
+
+        cudaMemcpy(result, gpuResultBeta1, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+        cout << "gpu_reduce: ";
+        for(i= 0; i < FEAT_LEN; i++)
+        {
+            cout << result[i*num_features] << " " ;
+        }
+        cout << "endl";
+
+        cudaThreadSynchronize();
+    }
+
+    cudaMemcpy(beta, gpubeta, FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+
+    cudaFree(gpufeatures);
+    cudaFree(gpulabels);
+    cudaFree(gpubeta);
+    cudaFree(gpuResultBeta1);
+    cudaFree(gpuResultBeta2);
+
     return 0;
 }
 
@@ -148,7 +199,7 @@ int predict_gpu(float* features, double* beta, int num_features, int* prediction
     double* gpubeta;
     int* gpupredictions;
 
-    std::cout << "starting gpu prediction\n";
+    std::cout << "starting gpu prediction" << endl;
 
     cudaMalloc((void**) &gpufeatures, num_features * FEAT_LEN * sizeof(float));
     cudaMemcpy(gpufeatures, features, num_features * FEAT_LEN * sizeof(float), cudaMemcpyHostToDevice);
@@ -159,8 +210,8 @@ int predict_gpu(float* features, double* beta, int num_features, int* prediction
     cudaMalloc((void**) &gpupredictions, num_features * sizeof(int));
     cudaMemset(gpupredictions, 0,        num_features * sizeof(int));
 
-    // BEGIN run kernel.
-    unsigned int numBlocks = num_features / THREADS_PER_BLOCK ;
+
+    unsigned int numBlocks = num_features / THREADS_PER_BLOCK + 1 ;
 
 
     predictKernel<<< numBlocks, THREADS_PER_BLOCK >>>(gpufeatures, gpubeta, num_features, gpupredictions);
