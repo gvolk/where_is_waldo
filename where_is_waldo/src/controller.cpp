@@ -1,5 +1,8 @@
 #include "controller.h"
 
+#define NOISE_FACTOR 2
+#define TMP_IMG "tmp_output.ppm"
+
 using namespace std;
 using namespace base;
 
@@ -77,35 +80,89 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     c3_class->train(f->getFeature(3));
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
         */
-    //TODO
-    // take new method
-    // create S s1 and set s1.path = filename. (some for s2).
-    vector<pair<QPoint, QPoint> > tmp;
-    S s1;
-    s1.path = "training_image.ppm";
-    S s2;
-    s2.path = "training_image_2.ppm";
-    tmp = GetRefPoints(s1, s2, data->top, data->bottom);
 
-    for (int i = 0; i < tmp.size(); i++) {
-        QPoint top = tmp[i].first;
-        QPoint bottom = tmp[i].second;
+    // do for all url to compare.
+    foreach(const QUrl url, urls) {
+        if (data->file == url) {
+            // skip ref file.
+            continue;
+        }
 
-        float diff = GetDiffFactor(data->top, data->bottom, top, bottom);
+        // create S s1 and set s1.path = filename. (some for s2).
+        vector<QPoint> topPoints;
+        vector<QPoint> bottomPoints;
+        vector<QPoint> startPoints;
 
-        // now
-        // diff = diff * 2; // i.e. to increase test bild size.
+        S s1;
+        s1.path = data->file.toString().toStdString().c_str();
+        S s2;
+        s2.path = url.toString().toStdString().c_str();
+
+        topPoints = GetRefPoints(s1, s2, data->top);
+        bottomPoints = GetRefPoints(s1, s2, data->bottom);
+        startPoints = GetRefPoints(s1, s2, data->sub_img_start);
+
+        QPixmap tmpImg(url.fileName());
+
+        QPoint minTop(tmpImg.width(), tmpImg.height());
+        QPoint maxBottom(0, 0);
+        QPoint minStart(tmpImg.width(), tmpImg.height());
+
+        for (int i = 0; i < topPoints.size(); i++) {
+            QPoint top = topPoints[i];
+            QPoint bottom = bottomPoints[i];
+            QPoint start = startPoints[i];
+
+            //float diff = GetDiffFactor(data->top, data->bottom, top, bottom);
+
+            if (top.y() < minTop.y()) {
+                minTop.setY(top.y());
+            }
+            if (bottom.y() < maxBottom.y()) {
+                maxBottom.setY(bottom.y());
+            }
+            if (start.x() < minStart.x()) {
+                minStart.setX(start.x());
+            }
+            if (start.y() < minStart.y()) {
+                minStart.setY(start.y());
+            }
+        }
+
+        // we have now a minimum top.y and a bottom.y
+        float diffY = maxBottom.y() - minTop.y();
+
+        // now take a factor! sensible do not choose big.
+        diffY = diffY * NOISE_FACTOR;
+
+        float tmpDiffY = data->bottom.y() - data->top.y();
+        float tmpDiffX = data->bottom.x() - data->top.x();
+
+        float tmpQuotient = diffY / tmpDiffY;
+
+        float diffX = tmpDiffX * tmpQuotient;
+
+        //save original heigth and width of image
+
+        QRect rect(minStart.x(), minStart.y(), diffX, diffY);
+        QPixmap cropped = tmpImg.copy(rect);
+
+        QFile file(TMP_IMG);
+        file.open(QIODevice::WriteOnly);
+        cropped.save(&file, "PPM");
+
+        // @TODO go one here
     }
 }
 
-float Controller::GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2) {
+/*float Controller::GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2) {
     float dist1 = bottom1.y() - top1.y();
     float dist2 = bottom2.y() - top2.y();
 
     return dist2/dist1;
-}
+}*/
 
-vector<pair<QPoint, QPoint> > Controller::GetRefPoints(S s1, S s2, QPoint top, QPoint bottom) {
+vector<QPoint> Controller::GetRefPoints(S s1, S s2, QPoint point) {
     /**
      * the following part only work for a special set of picture.
      * these are the pictures in the image dir of the project.
@@ -126,7 +183,7 @@ vector<pair<QPoint, QPoint> > Controller::GetRefPoints(S s1, S s2, QPoint top, Q
      * So these files are not included in any public git repositories.
      *
      */
-    vector<pair<QPoint, QPoint> > result;
+    vector<QPoint> result;
 
     string tmp = "camera_loading/test.nvm";
     const char* filename = tmp.c_str();
@@ -148,7 +205,7 @@ vector<pair<QPoint, QPoint> > Controller::GetRefPoints(S s1, S s2, QPoint top, Q
     }
 
     if (index1 == -1 || index2 == -1) {
-        return vector<pair<QPoint, QPoint> >();
+        return vector<QPoint>();
     }
 
     // Load camera data.
@@ -163,14 +220,14 @@ vector<pair<QPoint, QPoint> > Controller::GetRefPoints(S s1, S s2, QPoint top, Q
 
     // === Project a point from one camera to the other ===
     //Vec2f image1Point(cam1.ImageSize / 2); // Pick a point at the center of the image
-    Vec2f image1PointTop(top.x(), top.y());
-    Vec2f image1PointBottom(bottom.x(), bottom.y());
+    Vec2f image1Point(point.x(), point.y());
 
     // Process several depths
     for (float d = 0.4f; d <= 1.6f; d += 0.3f)
     {
+        //### DO TOP POINT
         // Transform point to viewspace vector
-        Vec3f cam1Dir = cam1.GetViewspaceDirection(image1PointTop);
+        Vec3f cam1Dir = cam1.GetViewspaceDirection(image1Point);
         // Transform to worldspace ray
         Rayf worldRay = pose1.GetWorldspaceRay(cam1Dir);
 
@@ -182,41 +239,19 @@ vector<pair<QPoint, QPoint> > Controller::GetRefPoints(S s1, S s2, QPoint top, Q
         // Transform to second camera's viewspace
         Vec3f cam2Dir = pose2.GetViewspaceDirectionFromPoint(worldPoint);
         // Transform to second image
-        Vec2f image2PointTop = cam2.GetImagePosition(cam2Dir);
+        Vec2f image2Point = cam2.GetImagePosition(cam2Dir);
 
         // Output results
-        cout << "Center pixel of first image (" << image1PointTop << ") "
-                << "with depth " << d << " corresponds to (" << image2PointTop
+        cout << "Center pixel of first image (" << image1Point << ") "
+                << "with depth " << d << " corresponds to (" << image2Point
                 << ") on second image." << endl;
 
-        // Transform point to viewspace vector
-        cam1Dir = cam1.GetViewspaceDirection(image1PointBottom);
-        // Transform to worldspace ray
-        worldRay = pose1.GetWorldspaceRay(cam1Dir);
+        QPoint point2;
+        point2.setX(image2Point[0]);
+        point2.setY(image2Point[1]);
 
-        // Pick a point on the ray according to depth
-        worldPoint = worldRay.Origin + worldRay.Direction * d;
-        // ATTENTION: The depth is interpreted along the normalized ray direction, not along the principal camera axis!
-        // Maybe you have to change this.
 
-        // Transform to second camera's viewspace
-        cam2Dir = pose2.GetViewspaceDirectionFromPoint(worldPoint);
-        // Transform to second image
-        Vec2f image2PointBottom = cam2.GetImagePosition(cam2Dir);
-
-        // Output results
-        cout << "Center pixel of first image (" << image1PointBottom << ") "
-                << "with depth " << d << " corresponds to (" << image2PointBottom
-                << ") on second image." << endl;
-
-        QPoint top2;
-        top2.setX(image2PointTop[0]);
-        top2.setY(image2PointTop[1]);
-
-        QPoint bottom2;
-        bottom2.setX(image2PointBottom[0]);
-        bottom2.setY(image2PointBottom[1]);
-        result.push_back(make_pair(top2, bottom2));
+        result.push_back(point2);
     }
 
     return result;

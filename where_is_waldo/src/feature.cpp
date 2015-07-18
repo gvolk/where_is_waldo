@@ -18,10 +18,10 @@ void Feature::createFeatures()
     feature2 = createSingleFeature(data->sub_img_width, data->sub_img_heigth, data->area2);
     feature3 = createSingleFeature(data->sub_img_width, data->sub_img_heigth, data->area3);
 
-    //doGauss(REF_AREA, GAUSS_AREA);
+    doGauss(REF_AREA, GAUSS_AREA);
     for(int i= 0; i<50; i++)
     {
-    //doGauss(GAUSS_AREA, GAUSS_AREA);
+    doGauss(GAUSS_AREA, GAUSS_AREA);
     }
 }
 
