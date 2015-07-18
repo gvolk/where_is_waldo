@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <fstream>
+#include <ctime>
 
 #include "camera_loading/CameraPoseData.h"
 #include "camera_loading/CameraData.h"
@@ -33,6 +34,7 @@ public:
     vector<pair<CameraDataf, CameraPoseDataf> > LoadCamerasFromFile(const char* filename);
     vector<pair<QPoint, QPoint> > GetRefPoints(S s1, S s2, QPoint top, QPoint bottom);
     float GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2);
+    void compareGPUvsCPU(LogRegClassifier* c1,LogRegClassifier* c2,LogRegClassifier* c3, Feature* f );
 
 private:
     GuiController *gc;

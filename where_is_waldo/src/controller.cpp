@@ -40,6 +40,60 @@ void Controller::save_selected_waldo(TrainingData data)
     dp->saveSelectedWaldo(data);
 }
 
+void Controller::compareGPUvsCPU(LogRegClassifier* c1,LogRegClassifier* c2,LogRegClassifier* c3, Feature* f )
+{
+    std::clock_t startTime;
+    std::clock_t trainingTime;
+    std::clock_t predictionTime;
+    //run cpu
+    c1->set_mode(CPU_MODE);
+    c2->set_mode(CPU_MODE);
+    c3->set_mode(CPU_MODE);
+
+    startTime =clock();
+
+    c1->train(f->getFeature(1));
+    c2->train(f->getFeature(2));
+    c3->train(f->getFeature(3));
+
+    trainingTime = clock();
+
+    c1->test_classification(f->getFeature(1), f->getFeature(1));
+    c2->test_classification(f->getFeature(2), f->getFeature(2));
+    c3->test_classification(f->getFeature(3), f->getFeature(3));
+
+    predictionTime = clock();
+
+    double cpu_train = double(trainingTime - startTime) / CLOCKS_PER_SEC;
+    double cpu_pred = double(predictionTime - trainingTime) / CLOCKS_PER_SEC;
+
+
+    //run gpu
+    c1->set_mode(GPU_MODE);
+    c2->set_mode(GPU_MODE);
+    c3->set_mode(GPU_MODE);
+
+    startTime =clock();
+
+    c1->train(f->getFeature(1));
+    c2->train(f->getFeature(2));
+    c3->train(f->getFeature(3));
+
+    trainingTime = clock();
+
+    c1->test_classification(f->getFeature(1), f->getFeature(1));
+    c2->test_classification(f->getFeature(2), f->getFeature(2));
+    c3->test_classification(f->getFeature(3), f->getFeature(3));
+
+    predictionTime = clock();
+
+    double gpu_train = double(trainingTime - startTime) / CLOCKS_PER_SEC;
+    double gpu_pred = double(predictionTime - trainingTime) / CLOCKS_PER_SEC;
+
+    qDebug() << "cpu train:" << cpu_train << "cpu predict" << cpu_pred;
+    qDebug() << "gpu train:" << gpu_train << "gpu predict" << gpu_pred;
+}
+
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 {
     f = new Feature(data);
@@ -58,14 +112,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     Feature* f2 = new Feature(data, "training_image_2.ppm");
     f2->createFeatures();
 
-    c1_class->train(f->getFeature(1));
-    c1_class->test_classification(f->getFeature(1), f->getFeature(1));
-
-    c2_class->train(f->getFeature(2));
-    c2_class->test_classification(f->getFeature(2), f->getFeature(2));
-
-    c3_class->train(f->getFeature(3));
-    c3_class->test_classification(f->getFeature(3), f->getFeature(3));
+    compareGPUvsCPU(c1_class, c2_class, c3_class, f);
 
     /*
     c1_class->train(f->getFeature(1));

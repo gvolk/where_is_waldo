@@ -13,6 +13,11 @@ LogRegClassifier::LogRegClassifier(bool cpu_mode)
     }
 }
 
+void LogRegClassifier::set_mode(bool mode)
+{
+    mode_cpu = mode;
+}
+
 double LogRegClassifier::find_z(feature_data* training_data, int idx) {
     double z = 0;
     for(int i = 0; i < FEAT_LEN; i++) {
@@ -75,8 +80,11 @@ void LogRegClassifier::train(feature_data* training_data)
     if(mode_cpu)
         train_cpu(training_data);
     else
-        train_cpu(training_data);
-        //train_gpu(training_data->labels, training_data->features, training_data->num_pix_features, beta_gpu);
+    {
+        //qDebug() << ":" << beta_cpu[0]<< ":" << beta_cpu[1]<< ":" << beta_cpu[2]<< ":" << beta_cpu[3]<< ":" << beta_cpu[4]<< ":" << beta_cpu[5]<< ":" << beta_cpu[6]<< ":" << beta_cpu[7]<< ":" << beta_cpu[8];
+        train_gpu(training_data->labels, training_data->features, training_data->num_pix_features, beta_gpu);
+        //qDebug() << ":" << beta_gpu[0]<< ":" << beta_gpu[1]<< ":" << beta_gpu[2]<< ":" << beta_gpu[3]<< ":" << beta_gpu[4]<< ":" << beta_gpu[5]<< ":" << beta_gpu[6]<< ":" << beta_gpu[7]<< ":" << beta_gpu[8];
+    }
 }
 
 
@@ -158,6 +166,7 @@ void LogRegClassifier::test_classification(feature_data* test, feature_data* tra
 
     report_accuracy(correct_zeros, correct_ones, total_zeros, total_ones);
 }
+
 
 void LogRegClassifier::report_accuracy(int correct_zeros, int correct_ones, int total_zeros, int total_ones) {
     qDebug() << "Class 0: tested " << total_zeros << ", correctly classified " << correct_zeros;
