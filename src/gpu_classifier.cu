@@ -157,11 +157,15 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
             cout << sum[j]  <<" ";
         }
         cout << endl;
+        for (int j = 0; j < FEAT_LEN; j++)
+        {
+             result[j]=0;
+        }
 
 
         for(i= 0; i < FEAT_LEN; i++)
         {
-            reduceBetas<<< dim3(1), numBlocks, numBlocks * sizeof(double) >>>(numBlocks , 1, i, gpuResultBeta2, gpuResultBeta1);
+            reduceBetas<<< dim3(1), THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks , 1, i, gpuResultBeta2, gpuResultBeta1);
         }
 
 
