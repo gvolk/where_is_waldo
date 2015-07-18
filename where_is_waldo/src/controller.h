@@ -32,9 +32,11 @@ public:
     int run();
     vector<S> LoadFilenamesFromFile(const char* filename);
     vector<pair<CameraDataf, CameraPoseDataf> > LoadCamerasFromFile(const char* filename);
-    vector<pair<QPoint, QPoint> > GetRefPoints(S s1, S s2, QPoint top, QPoint bottom);
-    float GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2);
+
     void compareGPUvsCPU(LogRegClassifier* c1,LogRegClassifier* c2,LogRegClassifier* c3, Feature* f );
+
+    vector<QPoint> GetRefPoints(S s1, S s2, QPoint point);
+    //float GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2);
 
 private:
     GuiController *gc;
