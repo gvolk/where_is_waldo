@@ -8,8 +8,10 @@
  ============================================================================
  */
 #include "gpu_classifier.h"
+#define THREADS_PER_BLOCK 256
 
-#define THREADS_PER_BLOCK 128
+
+#define MAX_THREADS 256
 
 static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t);
 #define CUDA_CHECK_RETURN(value) CheckCudaErrorAux(__FILE__,__LINE__, #value, value)
@@ -17,7 +19,7 @@ static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t
 
 __global__ void trainKernel(int* labels, float* features, int num_features, double *beta, double* gputmpbeta)
 {
-    int x = blockIdx.x * THREADS_PER_BLOCK + threadIdx.x;
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
     double z, proby;
     int pos;
 
@@ -41,24 +43,25 @@ __global__ void trainKernel(int* labels, float* features, int num_features, doub
 }
 
 //reduce betas of one feature previously computed by trainKernel
-__global__ void reduceBetas( int num_features, int feature_beta_idx, double* gpuResultBeta1, double* gpuResultBeta2)
+__global__ void reduceBetas(int num_features, int numBlocks, int feature_beta_idx, double* gpuResultBeta1, double* gpuResultBeta2)
 {
-    int x = blockIdx.x * THREADS_PER_BLOCK + threadIdx.x;
+    extern __shared__ double partialSum[];
 
-    if (x  >= num_features) {
-        return;
-    }
-
-    extern __shared__ float partialSum[];
+    int x = blockIdx.x * blockDim.x  + threadIdx.x;
 
     int beta_idx = feature_beta_idx * num_features + x;
 
     unsigned int t = threadIdx.x;
 
+    if (x  >= num_features) {
+        partialSum[t] = 0;
+        return;
+    }
+
     partialSum[t] = gpuResultBeta1[beta_idx];
 
 
-    for (unsigned int stride = THREADS_PER_BLOCK / 2; stride > 1; stride >>= 1) {
+    for (unsigned int stride = blockDim.x / 2 ; stride > 1; stride >>= 1) {
         __syncthreads();
         if (t < stride) {
             partialSum[t] += partialSum[t+stride];
@@ -68,9 +71,10 @@ __global__ void reduceBetas( int num_features, int feature_beta_idx, double* gpu
     __syncthreads();
 
     if (t == 0) {
-        gpuResultBeta2[feature_beta_idx * num_features + blockIdx.x] = partialSum[0] + partialSum[1];
+        gpuResultBeta2[feature_beta_idx * numBlocks + blockIdx.x] = partialSum[0] + partialSum[1];
     }
 }
+
 
 //label and features are input variables, beta is the output variable
 int train_gpu(int* labels, float* features, int num_features, double *beta)
@@ -87,6 +91,8 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
         //cout << features[i] << " ";
     }
 
+    unsigned int numBlocks = num_features / THREADS_PER_BLOCK +1;
+
     cudaMalloc((void**) &gpufeatures, num_features * FEAT_LEN * sizeof(float));
     cudaMemcpy(gpufeatures, features, num_features * FEAT_LEN * sizeof(float), cudaMemcpyHostToDevice);
 
@@ -102,7 +108,7 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
     cudaMalloc((void**) &gpuResultBeta2, num_features * FEAT_LEN * sizeof(double));
     cudaMemset(gpuResultBeta2, 0,        num_features * FEAT_LEN * sizeof(double));
 
-    unsigned int numBlocks = num_features / THREADS_PER_BLOCK +1 ;
+
 
     for(epochs = 0; epochs < EPOCHS; epochs++)
     {
@@ -113,7 +119,7 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
 
         double* result = new double[num_features * FEAT_LEN * sizeof(double)];
         cudaMemcpy(result, gpuResultBeta1, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
-        cout << "gpu_reduce: ";
+
         double *sum = new double[FEAT_LEN];
         cout << "gputrain:";
         for (int j = 0; j < FEAT_LEN; j++)
@@ -126,26 +132,47 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
         }
          cout << endl;
 
+         for (int j = 0; j < FEAT_LEN; j++)
+         {
+              sum[j]=0;
+         }
+
 
         // reduce all 9 betas for each feature
         for(i= 0; i < FEAT_LEN; i++)
         {
-            reduceBetas<<< numBlocks, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(num_features , i, gpuResultBeta1, gpuResultBeta2);
+            reduceBetas<<< numBlocks, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(num_features, numBlocks, i, gpuResultBeta1, gpuResultBeta2);
         }
+
         cudaThreadSynchronize();
+
+        cudaMemcpy(result, gpuResultBeta2, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+        cout << "gpureduce1:";
+        for (int j = 0; j < FEAT_LEN; j++)
+        {
+            for(i= 0; i < numBlocks; i++)
+            {
+                sum[j] += result[j*numBlocks + i];
+            }
+            cout << sum[j]  <<" ";
+        }
+        cout << endl;
+
+
         for(i= 0; i < FEAT_LEN; i++)
         {
-            reduceBetas<<< dim3(1), numBlocks, numBlocks * sizeof(double) >>>(num_features , i, gpuResultBeta2, gpuResultBeta1);
+            reduceBetas<<< dim3(1), numBlocks, numBlocks * sizeof(double) >>>(numBlocks , 1, i, gpuResultBeta2, gpuResultBeta1);
         }
+
 
         cudaThreadSynchronize();
 
 
-        cudaMemcpy(result, gpuResultBeta1, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+        cudaMemcpy(result, gpuResultBeta1,  FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
         cout << "gpu_reduce: ";
         for(i= 0; i < FEAT_LEN; i++)
         {
-            cout << result[i*num_features] << " " ;
+            cout << result[i] << " " ;
         }
         cout << "endl";
 
@@ -227,3 +254,36 @@ int predict_gpu(float* features, double* beta, int num_features, int* prediction
     return 0;
 
 }
+/*
+int main(int argc, char *argv[])
+{
+    int num_features = 2;
+    float* features = new float[18];
+    features[0] = -0.215425;
+    features[1]= -0.489831;
+    features[2] = -0.733932;
+    features[3] = -0.105368;
+    features[4] = -0.197275;
+    features[5] = -0.288388;
+    features[6] = -0.370837;
+    features[7] = -0.474699;
+    features[8] = -0.538087;
+    features[9] = -0.224642;
+    features[10] = -0.49868;
+    features[11] = -0.743322;
+    features[12] = -0.106715;
+    features[13] = -0.198606;
+    features[14] = -0.29024;
+    features[15] = -0.372176;
+    features[16] = -0.476292;
+    features[17] = -0.539666;
+    int* labels = new int[2];
+    labels[0] = 0;
+    labels[1] = 0;
+
+
+    double* beta = new double[9];
+    train_gpu( labels, features, num_features, beta);
+    //features =
+
+}*/
