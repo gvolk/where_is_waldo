@@ -325,7 +325,7 @@ vector<S> Controller::LoadFilenamesFromFile(const char* filename) {
 
         S s;
 
-        char* path[512];
+        char path[512];
 
         // only path is relevant.
         float tmp;
