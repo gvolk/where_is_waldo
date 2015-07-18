@@ -35,8 +35,9 @@ public:
 
     void compareGPUvsCPU(LogRegClassifier* c1,LogRegClassifier* c2,LogRegClassifier* c3, Feature* f );
 
-    vector<QPoint> GetRefPoints(S s1, S s2, QPoint point);
+    vector<QPoint> GetRefPoints(const char* s1, const char* s2, QPoint point);
     //float GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2);
+    bool ComparePath(const char* path1, const char* path2);
 
 private:
     GuiController *gc;

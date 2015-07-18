@@ -99,7 +99,7 @@ void Controller::compareGPUvsCPU(LogRegClassifier* c1,LogRegClassifier* c2,LogRe
 
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 {
-    f = new Feature(data);
+    /*f = new Feature(data);
     f->createFeatures();
     c1_class = new LogRegClassifier(GPU_MODE);
     c2_class = new LogRegClassifier(GPU_MODE);
@@ -115,7 +115,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     Feature* f2 = new Feature(data, "training_image_2.ppm");
     f2->createFeatures();
 
-    compareGPUvsCPU(c1_class, c2_class, c3_class, f);
+    compareGPUvsCPU(c1_class, c2_class, c3_class, f);*/
 
     /*
     c1_class->train(f->getFeature(1));
@@ -140,14 +140,14 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         vector<QPoint> bottomPoints;
         vector<QPoint> startPoints;
 
-        S s1;
-        s1.path = data->file.toString().toStdString().c_str();
-        S s2;
-        s2.path = url.toString().toStdString().c_str();
+        const char* path1 = (char*)malloc(512*sizeof(char));
+        path1 = data->file.toString().toStdString().c_str();
+        const char* path2 = (char*)malloc(512*sizeof(char));
+        path2 = url.toString().toStdString().c_str();
 
-        topPoints = GetRefPoints(s1, s2, data->top);
-        bottomPoints = GetRefPoints(s1, s2, data->bottom);
-        startPoints = GetRefPoints(s1, s2, data->sub_img_start);
+        topPoints = GetRefPoints(path1, path2, data->top);
+        bottomPoints = GetRefPoints(path1, path2, data->bottom);
+        startPoints = GetRefPoints(path1, path2, data->sub_img_start);
 
         QPixmap tmpImg(url.fileName());
 
@@ -209,7 +209,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     return dist2/dist1;
 }*/
 
-vector<QPoint> Controller::GetRefPoints(S s1, S s2, QPoint point) {
+vector<QPoint> Controller::GetRefPoints(const char* s1, const char* s2, QPoint point) {
     /**
      * the following part only work for a special set of picture.
      * these are the pictures in the image dir of the project.
@@ -232,7 +232,7 @@ vector<QPoint> Controller::GetRefPoints(S s1, S s2, QPoint point) {
      */
     vector<QPoint> result;
 
-    string tmp = "camera_loading/test.nvm";
+    string tmp = "../images/cmvs/nvm.cmvs.nvm";
     const char* filename = tmp.c_str();
 
     // Load file paths.
@@ -240,9 +240,9 @@ vector<QPoint> Controller::GetRefPoints(S s1, S s2, QPoint point) {
     signed int index1 = -1;
     signed int index2 = -1;
     for (unsigned int i = 0; i < paths.size(); i++) {
-        if (paths[i].path == s1.path) {
+        if (ComparePath(paths[i].path, s1)) {
             index1 = i;
-        } else if (paths[i].path == s2.path) {
+        } else if (ComparePath(paths[i].path, s2)) {
             index2 = i;
         }
 
@@ -304,6 +304,25 @@ vector<QPoint> Controller::GetRefPoints(S s1, S s2, QPoint point) {
     return result;
 }
 
+bool Controller::ComparePath(const char* path1, const char* path2) {
+    QString s1(path1);
+    QString s2(path2);
+
+    s1 = s1.replace("/images", "");
+    s1 = s1.replace("\"", "");
+    s1 = s1.replace(" ", "");
+
+    s2 = s2.replace("/images", "");
+    s2 = s2.replace("\"", "");
+    s2 = s2.replace(" ", "");
+
+    qDebug() << s1;
+    qDebug() << s2;
+    qDebug() << (s1 == s2);
+
+    return (s1 == s2);
+}
+
 vector<S> Controller::LoadFilenamesFromFile(const char* filename) {
     vector<S> result;
 
@@ -325,14 +344,15 @@ vector<S> Controller::LoadFilenamesFromFile(const char* filename) {
 
         S s;
 
-        char path[512];
+        s.path = (char*) malloc(512 * sizeof(char));
+
+        char* path = (char*) malloc(512 * sizeof(char));
 
         // only path is relevant.
         float tmp;
         sscanf(line.c_str(), "%s	%f %f %f %f %f %f %f %f", path, &tmp,
                         &tmp, &tmp, &tmp, &tmp, &tmp, &tmp, &tmp);
         // now save path
-
         s.path = path;
 
         result.push_back(s);
