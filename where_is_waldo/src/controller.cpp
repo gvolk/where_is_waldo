@@ -97,8 +97,44 @@ void Controller::compareGPUvsCPU(LogRegClassifier* c1,LogRegClassifier* c2,LogRe
     qDebug() << "gpu train:" << gpu_train << "gpu predict" << gpu_pred;
 }
 
+bool checkWaldo(const char* imagepath)
+{
+
+}
+
+void Controller::testClassifier(TrainingData *data)
+{
+    data->sub_img_start = QPoint(0,0);
+    data->sub_img_heigth = data->orig_img_height;
+    data->sub_img_width = data->orig_img_width;
+
+    f = new Feature(data);
+    f->createFeatures();
+    c1_class = new LogRegClassifier(CPU_MODE);
+    c2_class = new LogRegClassifier(CPU_MODE);
+    c3_class = new LogRegClassifier(CPU_MODE);
+
+    for(int i=0; i<9; i++)
+    {
+        qDebug() << f->getFeature(1)->features[i];
+    }
+    qDebug() << f->getFeature(1)->labels[0];
+
+    c1_class->train(f->getFeature(1));
+    c1_class->test_classification(f->getFeature(1), f->getFeature(1));
+
+    c2_class->train(f->getFeature(2));
+    c2_class->test_classification(f->getFeature(2), f->getFeature(2));
+
+    c3_class->train(f->getFeature(3));
+    c3_class->test_classification(f->getFeature(3), f->getFeature(3));
+
+}
+
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 {
+    testClassifier(data);
+    return;
     /*f = new Feature(data);
     f->createFeatures();
     c1_class = new LogRegClassifier(GPU_MODE);

@@ -84,6 +84,8 @@ __global__ void reduceBetas(int num_features, int numBlocks, int feature_beta_id
 //label and features are input variables, beta is the output variable
 int train_gpu(int* labels, float* features, int num_features, double *beta)
 {
+    std::pair<float,float> p_correct, new_correct;
+    int* cpulabels;
     float* gpufeatures;
     int* gpulabels;
     double* gpuResultBeta1;
@@ -92,6 +94,12 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
     int i, epochs;
 
     unsigned int numBlocks = num_features / THREADS_PER_BLOCK +1;
+
+    cudaMallocHost((void**) &cpulabels, num_features * sizeof(int));
+    for(i = 0; i < num_features; i++)
+    {
+        cpulabels[i]=0;
+    }
 
     cudaMalloc((void**) &gpufeatures, num_features * FEAT_LEN * sizeof(float));
     cudaMemcpy(gpufeatures, features, num_features * FEAT_LEN * sizeof(float), cudaMemcpyHostToDevice);
@@ -127,6 +135,22 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
             reduceBetas<<< dim3(1), THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks , 1, i, gpuResultBeta2, gpuResultBeta1, gpubeta);
         }
 
+        cudaThreadSynchronize();
+
+        cudaMemcpy(beta, gpubeta, FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+        predict_gpu(features, beta, num_features, cpulabels);
+        new_correct = calc_P_Correct(labels, cpulabels, num_features);
+        std::cout << p_correct.first << p_correct.second << new_correct.first << new_correct.second <<endl;
+        //qDebug() << p_correct.first << p_correct.second << new_correct.first << new_correct.second;
+        if(new_correct.first > 0.5 && new_correct.second > 0.5 )
+        {
+            p_correct = new_correct;
+            break;
+        }
+        else
+        {
+            p_correct = new_correct;
+        }
 
     }
 
@@ -138,6 +162,8 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
     cudaFree(gpubeta);
     cudaFree(gpuResultBeta1);
     cudaFree(gpuResultBeta2);
+
+    cudaFreeHost(cpulabels);
 
     return 0;
 }
@@ -178,8 +204,6 @@ int predict_gpu(float* features, double* beta, int num_features, int* prediction
     double* gpubeta;
     int* gpupredictions;
 
-    std::cout << "starting gpu prediction" << endl;
-
     cudaMalloc((void**) &gpufeatures, num_features * FEAT_LEN * sizeof(float));
     cudaMemcpy(gpufeatures, features, num_features * FEAT_LEN * sizeof(float), cudaMemcpyHostToDevice);
 
@@ -206,6 +230,40 @@ int predict_gpu(float* features, double* beta, int num_features, int* prediction
     return 0;
 
 }
+
+
+std::pair<float,float> calc_P_Correct(int* labels, int* predicted, int num_features)
+{
+    float total_zeros = 0;
+    float total_ones = 0;
+    float correct_zeros = 0;
+    float correct_ones = 0;
+
+    for(int i = 0; i < num_features; i++) {
+        if(labels[i] == predicted[i]) {
+            if(labels[i] == 1)
+            {
+                correct_ones++;
+            }
+            else
+            {
+                correct_zeros++;
+            }
+        }
+        if(labels[i] == 1)
+        {
+            total_ones++;
+        }
+        else
+        {
+            total_zeros++;
+        }
+    }
+
+    return (std::make_pair((correct_ones/total_ones),(correct_zeros/ total_zeros)));
+}
+
+
 /*
 int main(int argc, char *argv[])
 {

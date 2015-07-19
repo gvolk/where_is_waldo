@@ -39,6 +39,10 @@ public:
     //float GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2);
     bool ComparePath(const char* path1, const char* path2);
 
+    bool checkWaldo(const char* imagepath);
+    void testClassifier(TrainingData *data);
+
+
 private:
     GuiController *gc;
     DataProvider *dp;

@@ -37,7 +37,7 @@ public:
     void train(feature_data* train_data);
 
     void test_classification(feature_data* test_data, feature_data* train_data);
-    std::pair<float,float> calcPCorrect(feature_data* test, feature_data* train_data);
+    std::pair<float,float> calcPCorrect(int* labels, int* predicted, int num_features);
 
     void set_mode(bool cpu_mode);
 

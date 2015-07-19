@@ -40,7 +40,8 @@ double LogRegClassifier::sigmoid(double z)
 
 void LogRegClassifier::train_cpu(feature_data* training_data)
 {
-    std::pair<float,float> p_correct, new_correct;
+    double* beta_array = (double*) malloc(EPOCHS * FEAT_LEN * sizeof(double));
+    std::pair<float,float> * p_corr = new std::pair<float, float>[EPOCHS * FEAT_LEN];
     for(int i = 0; i < EPOCHS; i++) {
         double gradient[FEAT_LEN] = {};
         for(int k = 0; k < training_data->num_pix_features; k++) {
@@ -58,21 +59,36 @@ void LogRegClassifier::train_cpu(feature_data* training_data)
         //qDebug()<<i;
 
         update_betaj(gradient);
-        /*new_correct = calcPCorrect(training_data, training_data);
-        qDebug() << p_correct.first << p_correct.second << new_correct.first << new_correct.second;
-        if(new_correct.first > 0.5 && new_correct.second > 0.5 )
-        {
-            p_correct = new_correct;
-            break;
-        }
-        else
-        {
-            p_correct = new_correct;
-        }*/
-        //qDebug() << ":" << beta[0]<< ":" << betas[1]<< ":" << betas[2]<< ":" << betas[3]<< ":" << betas[4]<< ":" << betas[5]<< ":" << betas[6]<< ":" << betas[7]<< ":" << betas[8] << "---- cor:" << betas[9];
 
+        //save all betas to later choose the best
+        p_corr[i] = calcPCorrect(training_data->labels, predict(training_data), training_data->num_pix_features);
+        for(int j = 0; j < FEAT_LEN; j++) {
+
+            beta_array[i*FEAT_LEN +j] = beta_cpu[j];
+        }
     }
 
+    //choose best beta
+    bool break_outer =false;
+    for(float f = 0.99 ; f > 0.5 ; f -=0.02)
+    {
+        for(int i = 0; i< EPOCHS; i++)
+        {
+            if(p_corr[i].first >= f && p_corr[i].second >= f)
+            {
+                for(int k = 0; k < FEAT_LEN; k++)
+                {
+                    beta_cpu[k] = beta_array[i*FEAT_LEN +k];
+                }
+                break_outer = true;
+            }
+        }
+        if(break_outer)
+        {
+            break;
+        }
+    }
+    free(beta_array);
 }
 
 void LogRegClassifier::train(feature_data* training_data)
@@ -116,26 +132,32 @@ int* LogRegClassifier::predict(feature_data* test_data)
     }
 }
 
-std::pair<float,float> LogRegClassifier::calcPCorrect(feature_data* test, feature_data* train_data)
+std::pair<float,float> LogRegClassifier::calcPCorrect(int* labels, int* predicted, int num_features)
 {
     float total_zeros = 0;
     float total_ones = 0;
     float correct_zeros = 0;
     float correct_ones = 0;
-    int *labels = new int[train_data->num_pix_features];
-    labels = predict(test);
 
-    for(int i = 0; i < test->num_pix_features; i++) {
-        if(test->labels[i] == labels[i]) {
-            if(test->labels[i] == 1) {
+    for(int i = 0; i < num_features; i++) {
+        if(labels[i] == predicted[i]) {
+            if(labels[i] == 1)
+            {
                 correct_ones++;
             }
-            else {
+            else
+            {
                 correct_zeros++;
             }
         }
-        if(test->labels[i] == 1) total_ones++;
-        else total_zeros++;
+        if(labels[i] == 1)
+        {
+            total_ones++;
+        }
+        else
+        {
+            total_zeros++;
+        }
     }
 
     return (std::make_pair((correct_ones/total_ones),(correct_zeros/ total_zeros)));
@@ -151,18 +173,27 @@ void LogRegClassifier::test_classification(feature_data* test, feature_data* tra
     int *labels = new int[train_data->num_pix_features];
     labels = predict(test);
 
-    for(int i = 0; i < test->num_pix_features; i++) {
-        if(test->labels[i] == labels[i]) {
-            if(test->labels[i] == 1) {
+    for(int i = 0; i < train_data->num_pix_features; i++) {
+        if(train_data->labels[i] == labels[i]) {
+            if(labels[i] == 1)
+            {
                 correct_ones++;
             }
-            else {
+            else
+            {
                 correct_zeros++;
             }
         }
-        if(test->labels[i] == 1) total_ones++;
-        else total_zeros++;
+        if(train_data->labels[i] == 1)
+        {
+            total_ones++;
+        }
+        else
+        {
+            total_zeros++;
+        }
     }
+
 
     report_accuracy(correct_zeros, correct_ones, total_zeros, total_ones);
 }

@@ -36,4 +36,14 @@
 #define FEAT_LEN 9
 
 
+/*
+ * TEST DEFINSE
+*/
+
+#define TEST_WALDO "../images/testimages/waldo.ppm"
+#define TEST_WALDO2 "../images/testimages/waldo2.ppm"
+#define TEST_NO_WALDO "../images/testimages/no_waldo.ppm"
+
+
+
 #endif // DEFINES_H
