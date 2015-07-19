@@ -136,9 +136,9 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         }
 
         // create S s1 and set s1.path = filename. (some for s2).
-        vector<QPoint> topPoints;
-        vector<QPoint> bottomPoints;
-        vector<QPoint> startPoints;
+        vector<Vec2f> topPoints;
+        vector<Vec2f> bottomPoints;
+        vector<Vec2f> startPoints;
 
         string pathStr1 = data->file.toString().toStdString();
         char *path1 = new char[pathStr1.length() + 1];
@@ -148,75 +148,74 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         char *path2 = new char[pathStr2.length() + 1];
         strcpy(path2, pathStr2.c_str());
 
-        topPoints = GetRefPoints(path1, path2, data->top);
-        bottomPoints = GetRefPoints(path1, path2, data->bottom);
+        QPoint tmpTop;
+        tmpTop.setX(data->top.x() + data->sub_img_start.x());
+        tmpTop.setY(data->top.y() + data->sub_img_start.y());
+
+        QPoint tmpBottom;
+        tmpBottom.setX(data->bottom.x() + data->sub_img_start.x());
+        tmpBottom.setY(data->bottom.y() + data->sub_img_start.y());
+
+        topPoints = GetRefPoints(path1, path2, tmpTop);
+        bottomPoints = GetRefPoints(path1, path2, tmpBottom);
         startPoints = GetRefPoints(path1, path2, data->sub_img_start);
 
         QPixmap tmpImg(path2);
 
-        QPoint minTop(tmpImg.width(), tmpImg.height());
-        QPoint maxBottom(0, 0);
-        QPoint minStart(tmpImg.width(), tmpImg.height());
-        QPoint maxStart(0, 0);
+        Vec2f topAverage;
+        topAverage[0] = 0.f;
+        topAverage[1] = 0.f;
 
-        float tmpScale = 0.f;
+        Vec2f bottomAverage;
+        bottomAverage[0] = 0.f;
+        bottomAverage[1] = 0.f;
+
+        Vec2f startAverage;
+        startAverage[0] = 0.f;
+        startAverage[1] = 0.f;
+
         for (unsigned int i = 0; i < topPoints.size(); i++) {
-            QPoint top = topPoints[i];
-            QPoint bottom = bottomPoints[i];
-            QPoint start = startPoints[i];
+            Vec2f top = topPoints[i];
+            Vec2f bottom = bottomPoints[i];
+            Vec2f start = startPoints[i];
 
-            //float diff = GetDiffFactor(data->top, data->bottom, top, bottom);
+            topAverage[0] += top[0];
+            topAverage[1] += top[1];
 
-            if (top.y() < minTop.y()) {
-                minTop.setY(top.y());
-            }
-            if (bottom.y() < maxBottom.y()) {
-                maxBottom.setY(bottom.y());
-            }
-            if (start.x() < minStart.x()) {
-                minStart.setX(start.x());
-            }
-            if (start.y() < minStart.y()) {
-                minStart.setY(start.y());
-            }
-            if (start.x() > maxStart.x()) {
-                maxStart.setX(start.x());
-            }
-            if (start.y() > maxStart.y()) {
-                maxStart.setY(start.y());
-            }
+            bottomAverage[0] += bottom[0];
+            bottomAverage[1] += bottom[1];
 
-            tmpScale += bottom.y() - top.x();
+            startAverage[0] += start[0];
+            startAverage[1] += start[1];
         }
 
-        tmpScale /= topPoints.size();
+        topAverage[0] /= topPoints.size();
+        topAverage[1] /= topPoints.size();
 
-        // we have now a minimum top.y and a bottom.y
-        float diffY = maxBottom.y() - minTop.y();
-        if (maxStart.y()-minStart.y() > diffY) {
-            diffY = maxStart.y()-minStart.y();
-        }
+        bottomAverage[0] /= topPoints.size();
+        bottomAverage[1] /= topPoints.size();
 
-        // now take a factor! sensible do not choose big.
-        diffY = diffY * NOISE_FACTOR;
+        startAverage[0] /= topPoints.size();
+        startAverage[1] /= topPoints.size();
 
-        float tmpDiffY = data->bottom.y() - data->top.y();
-        float tmpDiffX = data->bottom.x() - data->top.x();
+        float diffY = bottomAverage[1] - topAverage[1];
+        qDebug() << diffY;
 
-        float tmpQuotient = diffY / tmpDiffY;
 
-        float scaleFactor = tmpScale / tmpDiffY;
+        int tmpDiffY = data->sub_img_heigth;
+        int tmpDiffX = data->sub_img_width;
 
-        float diffX = tmpDiffX * tmpQuotient;
-        if (maxStart.x()-minStart.x() > diffY) {
-            diffX = maxStart.x()-minStart.x();
-        }
+        float scaleFactor = diffY / tmpDiffY;
+
+        int diffX = (int)(tmpDiffX * scaleFactor);
 
         //save original heigth and width of image
 
-        QRect rect(minStart.x(), minStart.y(), diffX, diffY);
+        QRect rect(startAverage[0], startAverage[1], diffX, (int)diffY);
         QPixmap cropped = tmpImg.copy(rect);
 
+        qDebug() << (cropped.height() * scaleFactor);
+        qDebug() << (cropped.width() * scaleFactor);
         cropped.scaledToHeight(cropped.height() * scaleFactor);
         cropped.scaledToWidth(cropped.width() * scaleFactor);
 
@@ -238,7 +237,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     return dist2/dist1;
 }*/
 
-vector<QPoint> Controller::GetRefPoints(const char* s1, const char* s2, QPoint point) {
+vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint point) {
     /**
      * the following part only work for a special set of picture.
      * these are the pictures in the image dir of the project.
@@ -259,7 +258,7 @@ vector<QPoint> Controller::GetRefPoints(const char* s1, const char* s2, QPoint p
      * So these files are not included in any public git repositories.
      *
      */
-    vector<QPoint> result;
+    vector<Vec2f> result;
 
     string tmp = "../images/cmvs/nvm.cmvs.nvm";
     const char* filename = tmp.c_str();
@@ -281,7 +280,7 @@ vector<QPoint> Controller::GetRefPoints(const char* s1, const char* s2, QPoint p
     }
 
     if (index1 == -1 || index2 == -1) {
-        return vector<QPoint>();
+        return vector<Vec2f>();
     }
 
     // Load camera data.
@@ -325,12 +324,12 @@ vector<QPoint> Controller::GetRefPoints(const char* s1, const char* s2, QPoint p
                 << "with depth " << d << " corresponds to (" << image2Point
                 << ") on second image." << endl;
 
-        QPoint point2;
+        /*QPoint point2;
         point2.setX(image2Point[0]);
-        point2.setY(image2Point[1]);
+        point2.setY(image2Point[1]);*/
 
 
-        result.push_back(point2);
+        result.push_back(image2Point);
     }
 
     return result;
