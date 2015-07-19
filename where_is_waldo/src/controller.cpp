@@ -156,9 +156,9 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         tmpBottom.setX(data->bottom.x() + data->sub_img_start.x());
         tmpBottom.setY(data->bottom.y() + data->sub_img_start.y());
 
+        startPoints = GetRefPoints(path1, path2, data->sub_img_start);
         topPoints = GetRefPoints(path1, path2, tmpTop);
         bottomPoints = GetRefPoints(path1, path2, tmpBottom);
-        startPoints = GetRefPoints(path1, path2, data->sub_img_start);
 
         QPixmap tmpImg(path2);
 
