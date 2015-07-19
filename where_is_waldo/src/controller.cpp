@@ -422,9 +422,8 @@ vector<pair<CameraDataf, CameraPoseDataf> > Controller::LoadCamerasFromFile(
         intrinsics.FocalLength[0] = focalLength;
         intrinsics.FocalLength[1] = focalLength;
 
-        QPixmap q(path);
-        //intrinsics.ImageSize = Vec2f(2848, 2136); // TODO: Set this correctly from image
-        intrinsics.ImageSize = Vec2f(q.width(), q.height());
+        intrinsics.ImageSize = Vec2f(2848, 2136); // TODO: Set this correctly from image
+        //intrinsics.ImageSize = Vec2f(q.width(), q.height());
 
         CameraPoseDataf extrinsics;
         extrinsics.Alignment = rotation.GetRotationMatrix();
