@@ -140,16 +140,19 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         vector<QPoint> bottomPoints;
         vector<QPoint> startPoints;
 
-        const char* path1 = (char*)malloc(512*sizeof(char));
-        path1 = data->file.toString().toStdString().c_str();
-        const char* path2 = (char*)malloc(512*sizeof(char));
-        path2 = url.toString().toStdString().c_str();
+        string pathStr1 = data->file.toString().toStdString();
+        char *path1 = new char[pathStr1.length() + 1];
+        strcpy(path1, pathStr1.c_str());
+
+        string pathStr2 = url.toString().toStdString();
+        char *path2 = new char[pathStr2.length() + 1];
+        strcpy(path2, pathStr2.c_str());
 
         topPoints = GetRefPoints(path1, path2, data->top);
         bottomPoints = GetRefPoints(path1, path2, data->bottom);
         startPoints = GetRefPoints(path1, path2, data->sub_img_start);
 
-        QPixmap tmpImg(url.fileName());
+        QPixmap tmpImg(path2);
 
         QPoint minTop(tmpImg.width(), tmpImg.height());
         QPoint maxBottom(0, 0);
@@ -221,6 +224,9 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         file.open(QIODevice::WriteOnly);
         cropped.save(&file, "PPM");
 
+        delete [] path1;
+        delete [] path2;
+
         // @TODO go one here
     }
 }
@@ -290,7 +296,10 @@ vector<QPoint> Controller::GetRefPoints(const char* s1, const char* s2, QPoint p
 
     // === Project a point from one camera to the other ===
     //Vec2f image1Point(cam1.ImageSize / 2); // Pick a point at the center of the image
-    Vec2f image1Point(point.x(), point.y());
+    Vec2f image1Point;
+
+    image1Point[0] = point.x();
+    image1Point[1] = point.y();
 
     // Process several depths
     for (float d = 0.4f; d <= 1.6f; d += 0.3f)
@@ -338,10 +347,6 @@ bool Controller::ComparePath(const char* path1, const char* path2) {
     s2 = s2.replace("/images", "");
     s2 = s2.replace("\"", "");
     s2 = s2.replace(" ", "");
-
-    qDebug() << s1;
-    qDebug() << s2;
-    qDebug() << (s1 == s2);
 
     return (s1 == s2);
 }
