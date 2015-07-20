@@ -224,7 +224,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 
     c3_class->train(f->getFeature(3));
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
-    testClassifier(data);
+    //testClassifier(data);
 
     // do for all url to compare.
     foreach(const QUrl url, urls) {
