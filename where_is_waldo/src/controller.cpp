@@ -210,6 +210,22 @@ void Controller::testClassifier(TrainingData *data)
 
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 {
+    f = new Feature(data);
+    f->createFeatures();
+    c1_class = new LogRegClassifier(GPU_MODE);
+    c2_class = new LogRegClassifier(GPU_MODE);
+    c3_class = new LogRegClassifier(GPU_MODE);
+
+    c1_class->train(f->getFeature(1));
+    c1_class->test_classification(f->getFeature(1), f->getFeature(1));
+
+    c2_class->train(f->getFeature(2));
+    c2_class->test_classification(f->getFeature(2), f->getFeature(2));
+
+    c3_class->train(f->getFeature(3));
+    c3_class->test_classification(f->getFeature(3), f->getFeature(3));
+    testClassifier(data);
+
     // do for all url to compare.
     foreach(const QUrl url, urls) {
         if (data->file == url) {
