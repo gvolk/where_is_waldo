@@ -25,7 +25,7 @@
 #define GPU_MODE false
 
 
-#define EPOCHS 1000
+#define EPOCHS 1
 #define LEARN_CONST .001
 
 

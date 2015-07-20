@@ -110,9 +110,9 @@ void Controller::testClassifier(TrainingData *data)
 
     f = new Feature(data);
     f->createFeatures();
-    c1_class = new LogRegClassifier(CPU_MODE);
-    c2_class = new LogRegClassifier(CPU_MODE);
-    c3_class = new LogRegClassifier(CPU_MODE);
+    c1_class = new LogRegClassifier(GPU_MODE);
+    c2_class = new LogRegClassifier(GPU_MODE);
+    c3_class = new LogRegClassifier(GPU_MODE);
 
     for(int i=0; i<9; i++)
     {

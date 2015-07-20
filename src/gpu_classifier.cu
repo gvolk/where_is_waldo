@@ -8,7 +8,7 @@
  ============================================================================
  */
 #include "gpu_classifier.h"
-#define THREADS_PER_BLOCK 256
+#define THREADS_PER_BLOCK 512
 
 
 #define MAX_THREADS 256
@@ -71,12 +71,15 @@ __global__ void reduceBetas(int num_features, int numBlocks, int feature_beta_id
     __syncthreads();
 
     //if numBlocks = 1 then save to gpubeta for next epoch
-    if (t == 0 && numBlocks == 1)
-    {
-        gpubeta[feature_beta_idx * numBlocks + blockIdx.x] = partialSum[0] + partialSum[1];
-    }
-    else if (t==0){
-        gpuResultBeta2[feature_beta_idx * numBlocks + blockIdx.x] = partialSum[0] + partialSum[1];
+    if (t==0){
+        if (numBlocks == 1)
+        {
+            gpubeta[feature_beta_idx * numBlocks + blockIdx.x] = partialSum[0] + partialSum[1];
+        }
+        else
+        {
+            gpuResultBeta2[feature_beta_idx * numBlocks + blockIdx.x] = partialSum[0] + partialSum[1];
+        }
     }
 }
 
@@ -94,6 +97,9 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
     int i, epochs;
 
     unsigned int numBlocks = num_features / THREADS_PER_BLOCK +1;
+    unsigned int numBlocks2 = numBlocks / THREADS_PER_BLOCK +1;
+
+    std::cout << "numBlocks" << numBlocks;
 
     cudaMallocHost((void**) &cpulabels, num_features * sizeof(int));
     for(i = 0; i < num_features; i++)
@@ -123,6 +129,28 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
         // train one round to get all partial betas
         trainKernel<<< numBlocks, THREADS_PER_BLOCK >>>(gpulabels, gpufeatures, num_features, gpubeta, gpuResultBeta1);
 
+        cudaThreadSynchronize();
+
+        double* result = new double[num_features * FEAT_LEN * sizeof(double)];
+        cudaMemcpy(result, gpuResultBeta1, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+
+        double *sum = new double[FEAT_LEN];
+        cout << "gputrain:";
+        for (int j = 0; j < FEAT_LEN; j++)
+        {
+            for(i= 0; i < num_features; i++)
+            {
+                sum[j] += result[j*num_features + i];
+            }
+            cout << sum[j] <<" ";
+        }
+         cout << endl;
+
+         for (int j = 0; j < FEAT_LEN; j++)
+         {
+              sum[j]=0;
+         }
+
 
         // reduce all 9 betas for each feature
         for(i= 0; i < FEAT_LEN; i++)
@@ -130,30 +158,75 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
             reduceBetas<<< numBlocks, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(num_features, numBlocks, i, gpuResultBeta1, gpuResultBeta2, gpubeta);
         }
 
+        cudaThreadSynchronize();
+
+        cudaMemcpy(result, gpuResultBeta2, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+        cout << "gpureduce1:";
+        for (int j = 0; j < FEAT_LEN; j++)
+        {
+            for(i= 0; i < numBlocks; i++)
+            {
+                sum[j] += result[j*numBlocks + i];
+            }
+            cout << sum[j]  <<" ";
+        }
+        cout << endl;
+        for (int j = 0; j < FEAT_LEN; j++)
+        {
+             result[j]=0;
+        }
+        for (int j = 0; j < FEAT_LEN; j++)
+        {
+             sum[j]=0;
+        }
+
+
+
+        // reduce all 9 betas for each feature
         for(i= 0; i < FEAT_LEN; i++)
         {
-            reduceBetas<<< dim3(1), THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks , 1, i, gpuResultBeta2, gpuResultBeta1, gpubeta);
+            reduceBetas<<< numBlocks2, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks, numBlocks2, i, gpuResultBeta2, gpuResultBeta1, gpubeta);
         }
 
         cudaThreadSynchronize();
 
-        cudaMemcpy(beta, gpubeta, FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
-        predict_gpu(features, beta, num_features, cpulabels);
-        new_correct = calc_P_Correct(labels, cpulabels, num_features);
-        std::cout << p_correct.first << p_correct.second << new_correct.first << new_correct.second <<endl;
-        //qDebug() << p_correct.first << p_correct.second << new_correct.first << new_correct.second;
-        if(new_correct.first > 0.5 && new_correct.second > 0.5 )
+        cudaMemcpy(result, gpuResultBeta1, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+        cout << "gpureduce12:";
+        for (int j = 0; j < FEAT_LEN; j++)
         {
-            p_correct = new_correct;
-            break;
+            for(i= 0; i < numBlocks2; i++)
+            {
+                sum[j] += result[j*numBlocks2 + i];
+            }
+            cout << sum[j]  <<" ";
         }
-        else
+        cout << endl;
+        for (int j = 0; j < FEAT_LEN; j++)
         {
-            p_correct = new_correct;
+             result[j]=0;
         }
 
+
+
+        for(i= 0; i < FEAT_LEN; i++)
+        {
+            reduceBetas<<< dim3(1), THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks2 , 1, i, gpuResultBeta1, gpuResultBeta2, gpubeta);
+        }
+
+
+        cudaThreadSynchronize();
+
+
+        cudaMemcpy(result, gpubeta,  FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+        cout << "gpu_reduce: ";
+        for(i= 0; i < FEAT_LEN; i++)
+        {
+            cout << result[i] << " " ;
+        }
+        cout << endl;
+
+        cudaThreadSynchronize();
     }
-
 
     cudaMemcpy(beta, gpubeta, FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
 

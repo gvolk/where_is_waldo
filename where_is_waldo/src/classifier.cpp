@@ -97,9 +97,10 @@ void LogRegClassifier::train(feature_data* training_data)
         train_cpu(training_data);
     else
     {
-        //qDebug() << ":" << beta_cpu[0]<< ":" << beta_cpu[1]<< ":" << beta_cpu[2]<< ":" << beta_cpu[3]<< ":" << beta_cpu[4]<< ":" << beta_cpu[5]<< ":" << beta_cpu[6]<< ":" << beta_cpu[7]<< ":" << beta_cpu[8];
+        train_cpu(training_data);
+        qDebug() << ":" << beta_cpu[0]<< ":" << beta_cpu[1]<< ":" << beta_cpu[2]<< ":" << beta_cpu[3]<< ":" << beta_cpu[4]<< ":" << beta_cpu[5]<< ":" << beta_cpu[6]<< ":" << beta_cpu[7]<< ":" << beta_cpu[8];
         train_gpu(training_data->labels, training_data->features, training_data->num_pix_features, beta_gpu);
-        //qDebug() << ":" << beta_gpu[0]<< ":" << beta_gpu[1]<< ":" << beta_gpu[2]<< ":" << beta_gpu[3]<< ":" << beta_gpu[4]<< ":" << beta_gpu[5]<< ":" << beta_gpu[6]<< ":" << beta_gpu[7]<< ":" << beta_gpu[8];
+        qDebug() << ":" << beta_gpu[0]<< ":" << beta_gpu[1]<< ":" << beta_gpu[2]<< ":" << beta_gpu[3]<< ":" << beta_gpu[4]<< ":" << beta_gpu[5]<< ":" << beta_gpu[6]<< ":" << beta_gpu[7]<< ":" << beta_gpu[8];
     }
 }
 
