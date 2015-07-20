@@ -97,8 +97,17 @@ void Controller::compareGPUvsCPU(LogRegClassifier* c1,LogRegClassifier* c2,LogRe
     qDebug() << "gpu train:" << gpu_train << "gpu predict" << gpu_pred;
 }
 
-bool checkWaldo(const char* imagepath)
+bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
 {
+    Feature *f_test = new Feature(data, imagepath);
+    f_test->createFeatures();
+
+    c1_class->test_classification(f_test->getFeature(1), f->getFeature(1));
+    c2_class->test_classification(f_test->getFeature(2), f->getFeature(2));
+    c3_class->test_classification(f_test->getFeature(3), f->getFeature(3));
+
+    return true;
+
 
 }
 
@@ -110,12 +119,6 @@ void Controller::testClassifier(TrainingData *data)
     c2_class = new LogRegClassifier(GPU_MODE);
     c3_class = new LogRegClassifier(GPU_MODE);
 
-    for(int i=0; i<9; i++)
-    {
-        qDebug() << f->getFeature(1)->features[i];
-    }
-    qDebug() << f->getFeature(1)->labels[0];
-
     c1_class->train(f->getFeature(1));
     c1_class->test_classification(f->getFeature(1), f->getFeature(1));
 
@@ -124,6 +127,18 @@ void Controller::testClassifier(TrainingData *data)
 
     c3_class->train(f->getFeature(3));
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
+
+
+    if(checkWaldo(data, TEST_WALDO2))
+    {
+        qDebug()<< TEST_WALDO2 << "  found waldo";
+    }
+
+
+    if(checkWaldo(data, TEST_NO_WALDO))
+    {
+        qDebug()<< TEST_NO_WALDO << "  found waldo";
+    }
 
 }
 
