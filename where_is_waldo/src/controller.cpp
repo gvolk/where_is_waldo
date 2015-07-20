@@ -97,10 +97,22 @@ void Controller::compareGPUvsCPU(LogRegClassifier* c1,LogRegClassifier* c2,LogRe
     qDebug() << "gpu train:" << gpu_train << "gpu predict" << gpu_pred;
 }
 
+
+
+
 bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
 {
     Feature *f_test = new Feature(data, imagepath);
     f_test->createFeatures();
+    int* prediction_area1 = new int[f_test->getFeature(1)->num_pix_features];
+    int* prediction_area2 = new int[f_test->getFeature(2)->num_pix_features];
+    int* prediction_area3 = new int[f_test->getFeature(3)->num_pix_features];
+
+    prediction_area1 = c1_class->predict(f_test->getFeature(1));
+    prediction_area2 = c2_class->predict(f_test->getFeature(2));
+    prediction_area3 = c3_class->predict(f_test->getFeature(3));
+
+
 
     c1_class->test_classification(f_test->getFeature(1), f->getFeature(1));
     c2_class->test_classification(f_test->getFeature(2), f->getFeature(2));
@@ -111,7 +123,12 @@ bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
 
 }
 
-void Controller::testClassifier(TrainingData *data)
+/*
+ * imagepath is the path of the temporary Image normally "tmp_output.ppm"
+ * url is the path of the original image where waldo is searched
+ * rect is the rect in which waldo is searched inside the original image
+*/
+void Controller::checkImage(TrainingData *data, const char* imagepath, QUrl url, QRect rect)
 {
     f = new Feature(data);
     f->createFeatures();
@@ -120,26 +137,40 @@ void Controller::testClassifier(TrainingData *data)
     c3_class = new LogRegClassifier(GPU_MODE);
 
     c1_class->train(f->getFeature(1));
-    c1_class->test_classification(f->getFeature(1), f->getFeature(1));
+    //c1_class->test_classification(f->getFeature(1), f->getFeature(1));
 
     c2_class->train(f->getFeature(2));
-    c2_class->test_classification(f->getFeature(2), f->getFeature(2));
+    //c2_class->test_classification(f->getFeature(2), f->getFeature(2));
 
     c3_class->train(f->getFeature(3));
-    c3_class->test_classification(f->getFeature(3), f->getFeature(3));
+    //c3_class->test_classification(f->getFeature(3), f->getFeature(3));
 
 
-    if(checkWaldo(data, TEST_WALDO2))
+    if(checkWaldo(data, imagepath))
     {
-        qDebug()<< TEST_WALDO2 << "  found waldo";
+        qDebug()<< imagepath << "  found waldo";
+        int* x = new int[1];
+        int* y = new int[1];
+        int* width = new int[1];
+        int* height = new int[1];
+        rect.getRect(x,y,width,height);
+
+        WaldoMarker * waldo =new WaldoMarker();
+
+        waldo->file = url;
+        waldo->sub_img_start = QPoint(x[0],y[0]);
+        waldo->sub_img_width = width[0];
+        waldo->sub_img_heigth = height[0];
+
+        gc->addFoundWaldo(*waldo);
     }
 
+}
 
-    if(checkWaldo(data, TEST_NO_WALDO))
-    {
-        qDebug()<< TEST_NO_WALDO << "  found waldo";
-    }
-
+void Controller::testClassifier(TrainingData *data)
+{
+    checkImage(data,TEST_WALDO2, QUrl(TEST_WALDO2), QRect(10,10,300,300));
+    checkImage(data,TEST_NO_WALDO, QUrl(TEST_NO_WALDO), QRect(10,10,300,300));
 }
 
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)

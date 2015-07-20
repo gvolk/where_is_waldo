@@ -79,6 +79,15 @@ void GuiController::markedWaldosChanged()
     window->updateMarkedList(*list);
 }
 
+void GuiController::foundWaldosChanged()
+{
+    QList<QUrl> *list = new QList<QUrl>();
+    foreach (const WaldoMarker &waldo, found_waldos) {
+        list->append(QUrl(waldo.file.toString()));
+    }
+    window->updateFoundList(*list);
+}
+
 void GuiController::displayImage()
 {
     if(state == SELECT_WALDO || state == MARK_WALDO)
@@ -139,6 +148,18 @@ void GuiController::displayFoundWaldo()
 
     window->setQPixmap(q);
     window->updateAll();
+}
+
+void GuiController::addFoundWaldo(WaldoMarker waldo)
+{
+    found_waldos.append(waldo);
+    foundWaldosChanged();
+}
+
+void GuiController::clearFoundWaldo()
+{
+    found_waldos.clear();
+    foundWaldosChanged();
 }
 
 void GuiController::enterFind()
@@ -417,6 +438,7 @@ void GuiController::processFinishState()
     }
     else if(state == FIND_WALDO)
     {
+        clearFoundWaldo();
         emit find_waldo(all_training_images, &data);
     }
     else if(state == LOAD)

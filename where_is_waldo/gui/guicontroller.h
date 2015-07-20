@@ -21,6 +21,7 @@ public:
     GuiController(int & argc, char ** argv);
     int run();
     void loadData(TrainingData, QList<QUrl>, QList<WaldoMarker>);
+    void addFoundWaldo(WaldoMarker waldo);
     ~GuiController();
 
 public slots:
@@ -61,6 +62,8 @@ private:
     QList<WaldoMarker> found_waldos;
     WaldoMarker current_waldo;
     void markedWaldosChanged();
+    void foundWaldosChanged();
+    void clearFoundWaldo();
 };
 
 
