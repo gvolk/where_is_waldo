@@ -129,103 +129,26 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
         // train one round to get all partial betas
         trainKernel<<< numBlocks, THREADS_PER_BLOCK >>>(gpulabels, gpufeatures, num_features, gpubeta, gpuResultBeta1);
 
-        cudaThreadSynchronize();
-
-        double* result = new double[num_features * FEAT_LEN * sizeof(double)];
-        cudaMemcpy(result, gpuResultBeta1, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
-
-        double *sum = new double[FEAT_LEN];
-        cout << "gputrain:";
-        for (int j = 0; j < FEAT_LEN; j++)
-        {
-            for(i= 0; i < num_features; i++)
-            {
-                sum[j] += result[j*num_features + i];
-            }
-            cout << sum[j] <<" ";
-        }
-         cout << endl;
-
-         for (int j = 0; j < FEAT_LEN; j++)
-         {
-              sum[j]=0;
-         }
-
-
-        // reduce all 9 betas for each feature
+        //We need 3 not only two reduce function calls because there can be very much features such that there are for example 12000 blocks and
+        //the extern shared memory can not be allocated and the threads per block are not able to handle 12000 threads in one block...
+        // reduce1 all 9 betas for each feature
         for(i= 0; i < FEAT_LEN; i++)
         {
             reduceBetas<<< numBlocks, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(num_features, numBlocks, i, gpuResultBeta1, gpuResultBeta2, gpubeta);
         }
 
-        cudaThreadSynchronize();
-
-        cudaMemcpy(result, gpuResultBeta2, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
-        cout << "gpureduce1:";
-        for (int j = 0; j < FEAT_LEN; j++)
-        {
-            for(i= 0; i < numBlocks; i++)
-            {
-                sum[j] += result[j*numBlocks + i];
-            }
-            cout << sum[j]  <<" ";
-        }
-        cout << endl;
-        for (int j = 0; j < FEAT_LEN; j++)
-        {
-             result[j]=0;
-        }
-        for (int j = 0; j < FEAT_LEN; j++)
-        {
-             sum[j]=0;
-        }
-
-
-
-        // reduce all 9 betas for each feature
+        // reduce2 all 9 betas for each feature
         for(i= 0; i < FEAT_LEN; i++)
         {
             reduceBetas<<< numBlocks2, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks, numBlocks2, i, gpuResultBeta2, gpuResultBeta1, gpubeta);
         }
 
-        cudaThreadSynchronize();
-
-        cudaMemcpy(result, gpuResultBeta1, num_features * FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
-        cout << "gpureduce12:";
-        for (int j = 0; j < FEAT_LEN; j++)
-        {
-            for(i= 0; i < numBlocks2; i++)
-            {
-                sum[j] += result[j*numBlocks2 + i];
-            }
-            cout << sum[j]  <<" ";
-        }
-        cout << endl;
-        for (int j = 0; j < FEAT_LEN; j++)
-        {
-             result[j]=0;
-        }
-
-
-
+        //reduce 3
         for(i= 0; i < FEAT_LEN; i++)
         {
             reduceBetas<<< dim3(1), THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks2 , 1, i, gpuResultBeta1, gpuResultBeta2, gpubeta);
         }
 
-
-        cudaThreadSynchronize();
-
-
-        cudaMemcpy(result, gpubeta,  FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
-        cout << "gpu_reduce: ";
-        for(i= 0; i < FEAT_LEN; i++)
-        {
-            cout << result[i] << " " ;
-        }
-        cout << endl;
-
-        cudaThreadSynchronize();
     }
 
     cudaMemcpy(beta, gpubeta, FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
