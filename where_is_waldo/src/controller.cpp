@@ -145,8 +145,14 @@ bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
 
     qDebug() << correct;
 
-
-    return true;
+    if(correct >=0.5)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 /*
@@ -180,8 +186,8 @@ void Controller::checkImage(TrainingData *data, const char* imagepath, QUrl url,
 
 void Controller::testClassifier(TrainingData *data)
 {
-    checkImage(data,TEST_WALDO2, QUrl(TEST_WALDO2), QRect(10,10,300,300));
-    checkImage(data,TEST_NO_WALDO, QUrl(TEST_NO_WALDO), QRect(10,10,300,300));
+    checkImage(data,TEST_WALDO2, QUrl(TEST_WALDO2), QRect(10,10,472,585));
+    checkImage(data,TEST_NO_WALDO, QUrl(TEST_NO_WALDO), QRect(10,10,472,585));
 }
 
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
