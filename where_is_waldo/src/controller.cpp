@@ -98,7 +98,26 @@ void Controller::compareGPUvsCPU(LogRegClassifier* c1,LogRegClassifier* c2,LogRe
 }
 
 
+float Controller::getPCorrect_Classifier(TrainingData* data, int* predictions, int feature_nr)
+{
+    float* gauss;
+    float correct = 0.0f, sum = 0.0f;
+    int offset = feature_nr -1, idx = 0;
+    ppm::readPPM(GAUSS_AREA, data->sub_img_width, data->sub_img_heigth, &gauss);
 
+    for(int i = 0; i < f->getFeature(feature_nr)->num_pix_features ; i++)
+    {
+        idx = 3 * i;
+        sum += gauss[idx + offset];
+        //if label == prediction add gauss value to correct
+        if(f->getFeature(feature_nr)->labels[i] == predictions[i])
+        {
+            correct += gauss[idx + offset];
+        }
+    }
+
+    return(correct/sum);
+}
 
 bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
 {
@@ -107,20 +126,27 @@ bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
     int* prediction_area1 = new int[f_test->getFeature(1)->num_pix_features];
     int* prediction_area2 = new int[f_test->getFeature(2)->num_pix_features];
     int* prediction_area3 = new int[f_test->getFeature(3)->num_pix_features];
+    float correct_area1, correct_area2, correct_area3, correct;
 
     prediction_area1 = c1_class->predict(f_test->getFeature(1));
     prediction_area2 = c2_class->predict(f_test->getFeature(2));
     prediction_area3 = c3_class->predict(f_test->getFeature(3));
 
-
-
     c1_class->test_classification(f_test->getFeature(1), f->getFeature(1));
     c2_class->test_classification(f_test->getFeature(2), f->getFeature(2));
     c3_class->test_classification(f_test->getFeature(3), f->getFeature(3));
 
+    correct_area1 = getPCorrect_Classifier(data, prediction_area1, 1);
+    correct_area2 = getPCorrect_Classifier(data, prediction_area2, 2);
+    correct_area3 = getPCorrect_Classifier(data, prediction_area3, 3);
+
+    correct = correct_area1 * 4 + correct_area2 * 4 + correct_area3 * 2;
+    correct = correct / 10;
+
+    qDebug() << correct;
+
+
     return true;
-
-
 }
 
 /*
@@ -130,21 +156,6 @@ bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
 */
 void Controller::checkImage(TrainingData *data, const char* imagepath, QUrl url, QRect rect)
 {
-    f = new Feature(data);
-    f->createFeatures();
-    c1_class = new LogRegClassifier(GPU_MODE);
-    c2_class = new LogRegClassifier(GPU_MODE);
-    c3_class = new LogRegClassifier(GPU_MODE);
-
-    c1_class->train(f->getFeature(1));
-    //c1_class->test_classification(f->getFeature(1), f->getFeature(1));
-
-    c2_class->train(f->getFeature(2));
-    //c2_class->test_classification(f->getFeature(2), f->getFeature(2));
-
-    c3_class->train(f->getFeature(3));
-    //c3_class->test_classification(f->getFeature(3), f->getFeature(3));
-
 
     if(checkWaldo(data, imagepath))
     {
@@ -175,27 +186,12 @@ void Controller::testClassifier(TrainingData *data)
 
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 {
-    testClassifier(data);
-    return;
-    /*f = new Feature(data);
+    f = new Feature(data);
     f->createFeatures();
     c1_class = new LogRegClassifier(GPU_MODE);
     c2_class = new LogRegClassifier(GPU_MODE);
     c3_class = new LogRegClassifier(GPU_MODE);
 
-    for(int i=0; i<9; i++)
-    {
-        qDebug() << f->getFeature(1)->features[i];
-    }
-    qDebug() << f->getFeature(1)->labels[0];
-
-
-    Feature* f2 = new Feature(data, "training_image_2.ppm");
-    f2->createFeatures();
-
-    compareGPUvsCPU(c1_class, c2_class, c3_class, f);*/
-
-    /*
     c1_class->train(f->getFeature(1));
     c1_class->test_classification(f->getFeature(1), f->getFeature(1));
 
@@ -204,7 +200,12 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 
     c3_class->train(f->getFeature(3));
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
-        */
+    testClassifier(data);
+    return;
+
+
+    //compareGPUvsCPU(c1_class, c2_class, c3_class, f);
+
 
     // do for all url to compare.
     foreach(const QUrl url, urls) {

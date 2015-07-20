@@ -21,9 +21,9 @@ void Feature::createFeatures()
     if(featurefile == REF_IMG)
     {
         doGauss(REF_AREA, GAUSS_AREA);
-        for(int i= 0; i<50; i++)
+        for(int i= 0; i<30; i++)
         {
-        doGauss(GAUSS_AREA, GAUSS_AREA);
+            doGauss(GAUSS_AREA, GAUSS_AREA);
         }
     }
 }

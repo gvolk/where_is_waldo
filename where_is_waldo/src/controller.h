@@ -53,6 +53,7 @@ private:
     LogRegClassifier* c3_class;
 
     void initSlots();
+    float getPCorrect_Classifier(TrainingData* data, int* predictions, int feature_nr);
 
 public slots:
     void save_marked_waldos(QList<WaldoMarker>);

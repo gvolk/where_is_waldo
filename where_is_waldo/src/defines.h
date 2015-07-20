@@ -12,8 +12,6 @@
 
 #define GAUSS_AREA "gauss_areas.ppm"
 
-
-
 /*
  *  CLASSIFIER DEFINES
 */
