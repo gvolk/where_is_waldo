@@ -104,10 +104,6 @@ bool checkWaldo(const char* imagepath)
 
 void Controller::testClassifier(TrainingData *data)
 {
-    data->sub_img_start = QPoint(0,0);
-    data->sub_img_heigth = data->orig_img_height;
-    data->sub_img_width = data->orig_img_width;
-
     f = new Feature(data);
     f->createFeatures();
     c1_class = new LogRegClassifier(GPU_MODE);

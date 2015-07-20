@@ -97,10 +97,10 @@ void LogRegClassifier::train(feature_data* training_data)
         train_cpu(training_data);
     else
     {
-        train_cpu(training_data);
-        qDebug() << ":" << beta_cpu[0]<< ":" << beta_cpu[1]<< ":" << beta_cpu[2]<< ":" << beta_cpu[3]<< ":" << beta_cpu[4]<< ":" << beta_cpu[5]<< ":" << beta_cpu[6]<< ":" << beta_cpu[7]<< ":" << beta_cpu[8];
+        //train_cpu(training_data);
+        //qDebug() << ":" << beta_cpu[0]<< ":" << beta_cpu[1]<< ":" << beta_cpu[2]<< ":" << beta_cpu[3]<< ":" << beta_cpu[4]<< ":" << beta_cpu[5]<< ":" << beta_cpu[6]<< ":" << beta_cpu[7]<< ":" << beta_cpu[8];
         train_gpu(training_data->labels, training_data->features, training_data->num_pix_features, beta_gpu);
-        qDebug() << ":" << beta_gpu[0]<< ":" << beta_gpu[1]<< ":" << beta_gpu[2]<< ":" << beta_gpu[3]<< ":" << beta_gpu[4]<< ":" << beta_gpu[5]<< ":" << beta_gpu[6]<< ":" << beta_gpu[7]<< ":" << beta_gpu[8];
+        //qDebug() << ":" << beta_gpu[0]<< ":" << beta_gpu[1]<< ":" << beta_gpu[2]<< ":" << beta_gpu[3]<< ":" << beta_gpu[4]<< ":" << beta_gpu[5]<< ":" << beta_gpu[6]<< ":" << beta_gpu[7]<< ":" << beta_gpu[8];
     }
 }
 
@@ -128,42 +128,10 @@ int* LogRegClassifier::predict(feature_data* test_data)
     else
     {
         int* labels = (int*)malloc(test_data->num_pix_features*sizeof(int));
-        predict_gpu(test_data->features, beta_cpu, test_data->num_pix_features, labels);
+        predict_gpu(test_data->features, beta_gpu, test_data->num_pix_features, labels);
         return labels;
     }
 }
-
-std::pair<float,float> LogRegClassifier::calcPCorrect(int* labels, int* predicted, int num_features)
-{
-    float total_zeros = 0;
-    float total_ones = 0;
-    float correct_zeros = 0;
-    float correct_ones = 0;
-
-    for(int i = 0; i < num_features; i++) {
-        if(labels[i] == predicted[i]) {
-            if(labels[i] == 1)
-            {
-                correct_ones++;
-            }
-            else
-            {
-                correct_zeros++;
-            }
-        }
-        if(labels[i] == 1)
-        {
-            total_ones++;
-        }
-        else
-        {
-            total_zeros++;
-        }
-    }
-
-    return (std::make_pair((correct_ones/total_ones),(correct_zeros/ total_zeros)));
-}
-
 
 void LogRegClassifier::test_classification(feature_data* test, feature_data* train_data)
 {

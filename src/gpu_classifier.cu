@@ -89,6 +89,8 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
 {
     std::pair<float,float> p_correct, new_correct;
     int* cpulabels;
+    double* beta_array;
+    std::pair<float,float> * p_corr;
     float* gpufeatures;
     int* gpulabels;
     double* gpuResultBeta1;
@@ -103,6 +105,8 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
     std::cout << "numBlocks" << numBlocks;
 
     cudaMallocHost((void**) &cpulabels, num_features * sizeof(int));
+    cudaMallocHost((void**) &beta_array, EPOCHS * FEAT_LEN * sizeof(double));
+    cudaMallocHost((void**) &p_corr, EPOCHS * FEAT_LEN * sizeof(std::pair<float,float>));
     for(i = 0; i < num_features; i++)
     {
         cpulabels[i]=0;
@@ -152,9 +156,35 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
         }
 
 
+        cudaMemcpy(beta, gpubeta, FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+        predict_gpu(features,beta,num_features,cpulabels);
+        p_corr[i] = calcPCorrect(labels, cpulabels, num_features);
+        for(int j = 0; j < FEAT_LEN; j++) {
+
+            beta_array[i*FEAT_LEN +j] = beta[j];
+        }
     }
 
-    cudaMemcpy(beta, gpubeta, FEAT_LEN * sizeof(double), cudaMemcpyDeviceToHost);
+    //choose best beta
+    bool break_outer =false;
+    for(float f = 0.99 ; f > 0.5 ; f -=0.02)
+    {
+        for(int i = 0; i< EPOCHS; i++)
+        {
+            if(p_corr[i].first >= f && p_corr[i].second >= f)
+            {
+                for(int k = 0; k < FEAT_LEN; k++)
+                {
+                    beta[k] = beta_array[i*FEAT_LEN +k];
+                }
+                break_outer = true;
+            }
+        }
+        if(break_outer)
+        {
+            break;
+        }
+    }
 
     cudaFree(gpufeatures);
     cudaFree(gpulabels);
@@ -232,7 +262,7 @@ int predict_gpu(float* features, double* beta, int num_features, int* prediction
 }
 
 
-std::pair<float,float> calc_P_Correct(int* labels, int* predicted, int num_features)
+std::pair<float,float> calcPCorrect(int* labels, int* predicted, int num_features)
 {
     float total_zeros = 0;
     float total_ones = 0;
