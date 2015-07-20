@@ -93,6 +93,7 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
     int* gpulabels;
     double* gpuResultBeta1;
     double* gpuResultBeta2;
+    double* gpuResultBeta3;
     double* gpubeta;
     int i, epochs;
 
@@ -119,35 +120,37 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
     cudaMalloc((void**) &gpuResultBeta1, num_features * FEAT_LEN * sizeof(double));
     cudaMemset(gpuResultBeta1, 0,        num_features * FEAT_LEN * sizeof(double));
 
-    cudaMalloc((void**) &gpuResultBeta2, num_features * FEAT_LEN * sizeof(double));
-    cudaMemset(gpuResultBeta2, 0,        num_features * FEAT_LEN * sizeof(double));
+    cudaMalloc((void**) &gpuResultBeta2, numBlocks * FEAT_LEN * sizeof(double));
+    cudaMemset(gpuResultBeta2, 0,        numBlocks * FEAT_LEN * sizeof(double));
 
-
+    cudaMalloc((void**) &gpuResultBeta3, numBlocks2 * FEAT_LEN * sizeof(double));
+    cudaMemset(gpuResultBeta3, 0,        numBlocks2 * FEAT_LEN * sizeof(double));
 
     for(epochs = 0; epochs < EPOCHS; epochs++)
     {
         // train one round to get all partial betas
         trainKernel<<< numBlocks, THREADS_PER_BLOCK >>>(gpulabels, gpufeatures, num_features, gpubeta, gpuResultBeta1);
 
-        //We need 3 not only two reduce function calls because there can be very much features such that there are for example 12000 blocks and
-        //the extern shared memory can not be allocated and the threads per block are not able to handle 12000 threads in one block...
-        // reduce1 all 9 betas for each feature
+
+        // we need three reduce because otherwise there are too much threads per block because we have too much features
+        //furthermore 3 tmp results on gpu are necessary because gpuResultBeta1 is needed in the next iteration and must not change
+        // reduce all 9 betas for each feature
         for(i= 0; i < FEAT_LEN; i++)
         {
             reduceBetas<<< numBlocks, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(num_features, numBlocks, i, gpuResultBeta1, gpuResultBeta2, gpubeta);
         }
 
-        // reduce2 all 9 betas for each feature
+        // reduce all 9 betas for each feature
         for(i= 0; i < FEAT_LEN; i++)
         {
-            reduceBetas<<< numBlocks2, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks, numBlocks2, i, gpuResultBeta2, gpuResultBeta1, gpubeta);
+            reduceBetas<<< numBlocks2, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks, numBlocks2, i, gpuResultBeta2, gpuResultBeta3, gpubeta);
         }
 
-        //reduce 3
         for(i= 0; i < FEAT_LEN; i++)
         {
-            reduceBetas<<< dim3(1), THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks2 , 1, i, gpuResultBeta1, gpuResultBeta2, gpubeta);
+            reduceBetas<<< dim3(1), THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(double) >>>(numBlocks2 , 1, i, gpuResultBeta3, gpuResultBeta2, gpubeta);
         }
+
 
     }
 
@@ -158,6 +161,7 @@ int train_gpu(int* labels, float* features, int num_features, double *beta)
     cudaFree(gpubeta);
     cudaFree(gpuResultBeta1);
     cudaFree(gpuResultBeta2);
+    cudaFree(gpuResultBeta3);
 
     cudaFreeHost(cpulabels);
 
