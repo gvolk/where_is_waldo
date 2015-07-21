@@ -64,6 +64,7 @@ private:
     void markedWaldosChanged();
     void foundWaldosChanged();
     void clearFoundWaldo();
+    void checkFoundWaldos();
 };
 
 

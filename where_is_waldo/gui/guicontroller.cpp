@@ -419,6 +419,7 @@ void GuiController::processFinishState()
                 emit all_training_images_sig(all_training_images);
                 window->statusBar()->showMessage("selected areas saved");
                 saveAreas();
+                waldos.clear();
             }
             default:
                 //nothing to do
@@ -440,6 +441,7 @@ void GuiController::processFinishState()
     {
         clearFoundWaldo();
         emit find_waldo(all_training_images, &data);
+        checkFoundWaldos();
     }
     else if(state == LOAD)
     {
@@ -459,6 +461,14 @@ void GuiController::loadData(TrainingData new_data, QList<QUrl> new_images, QLis
     displayImage();
     enterFind();
     //enterSubImage();
+}
+
+void GuiController::checkFoundWaldos()
+{
+    int num_waldos = waldos.length();
+    int num_found_waldos = found_waldos.length();
+    QString output = QString("Found %1 out of %2 marked waldos").arg(num_found_waldos).arg(num_waldos);
+    window->statusBar()->showMessage(output);
 }
 
 
