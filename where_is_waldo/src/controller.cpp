@@ -204,8 +204,8 @@ void Controller::checkImage(TrainingData *data, const char* imagepath, QUrl url,
 
 void Controller::testClassifier(TrainingData *data)
 {
-    checkImage(data,TEST_WALDO2, QUrl(TEST_WALDO2), QRect(10,10,472,585));
-    checkImage(data,TEST_NO_WALDO, QUrl(TEST_NO_WALDO), QRect(10,10,472,585));
+    checkImage(data,TEST_WALDO2, QUrl(TEST_WALDO2), QRect(10,10,455,565));
+    checkImage(data,TEST_NO_WALDO, QUrl(TEST_NO_WALDO), QRect(10,10,455,565));
 }
 
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
@@ -224,7 +224,9 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 
     c3_class->train(f->getFeature(3));
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
-    //testClassifier(data);
+    testClassifier(data);
+
+    return;
 
     // do for all url to compare.
     foreach(const QUrl url, urls) {
