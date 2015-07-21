@@ -131,7 +131,25 @@ bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
     prediction_area1 = c1_class->predict(f_test->getFeature(1));
     prediction_area2 = c2_class->predict(f_test->getFeature(2));
     prediction_area3 = c3_class->predict(f_test->getFeature(3));
+    /*f = new Feature(data);
+    f->createFeatures();
+    c1_class = new LogRegClassifier(GPU_MODE);
+    c2_class = new LogRegClassifier(GPU_MODE);
+    c3_class = new LogRegClassifier(GPU_MODE);
 
+    c1_class->train(f->getFeature(1));
+    c1_class->test_classification(f->getFeature(1), f->getFeature(1));
+
+    c2_class->train(f->getFeature(2));
+    c2_class->test_classification(f->getFeature(2), f->getFeature(2));
+
+    c3_class->train(f->getFeature(3));
+    c3_class->test_classification(f->getFeature(3), f->getFeature(3));
+    testClassifier(data);
+    return;*/
+
+
+    //compareGPUvsCPU(c1_class, c2_class, c3_class, f);
     c1_class->test_classification(f_test->getFeature(1), f->getFeature(1));
     c2_class->test_classification(f_test->getFeature(2), f->getFeature(2));
     c3_class->test_classification(f_test->getFeature(3), f->getFeature(3));
@@ -206,12 +224,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 
     c3_class->train(f->getFeature(3));
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
-    testClassifier(data);
-    return;
-
-
-    //compareGPUvsCPU(c1_class, c2_class, c3_class, f);
-
+    //testClassifier(data);
 
     // do for all url to compare.
     foreach(const QUrl url, urls) {
@@ -241,9 +254,9 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         tmpBottom.setX(data->bottom.x() + data->sub_img_start.x());
         tmpBottom.setY(data->bottom.y() + data->sub_img_start.y());
 
-        startPoints = GetRefPoints(path1, path2, data->sub_img_start);
+        /*startPoints = GetRefPoints(path1, path2, data->sub_img_start);
         topPoints = GetRefPoints(path1, path2, tmpTop);
-        bottomPoints = GetRefPoints(path1, path2, tmpBottom);
+        bottomPoints = GetRefPoints(path1, path2, tmpBottom);*/
 
         QPixmap tmpImg(path2);
 
@@ -259,7 +272,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         startAverage[0] = 0.f;
         startAverage[1] = 0.f;
 
-        for (unsigned int i = 0; i < topPoints.size(); i++) {
+        /*for (unsigned int i = 0; i < topPoints.size(); i++) {
             Vec2f top = topPoints[i];
             Vec2f bottom = bottomPoints[i];
             Vec2f start = startPoints[i];
@@ -293,34 +306,35 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         float scaleFactor = diffY / tmpDiffY;
 
         int diffX = (int)(tmpDiffX * scaleFactor);
+        */
 
         //save original heigth and width of image
+        // temporary data dirty fix: 955, 940 to 1115, 1150
+        startAverage[0] = 955.f;
+        startAverage[1] = 940.f;
+
+        int diffX = 1115.f - (int)startAverage[0];
+        float diffY = 1150.f - startAverage[1];
 
         QRect rect(startAverage[0], startAverage[1], diffX, (int)diffY);
         QPixmap cropped = tmpImg.copy(rect);
 
-        qDebug() << (cropped.height() * scaleFactor);
-        qDebug() << (cropped.width() * scaleFactor);
-        cropped.scaledToHeight(cropped.height() * scaleFactor);
-        cropped.scaledToWidth(cropped.width() * scaleFactor);
+        //qDebug() << (cropped.height() * scaleFactor);
+        //qDebug() << (cropped.width() * scaleFactor);
+        cropped = cropped.scaledToHeight(data->sub_img_heigth);
+        cropped = cropped.scaledToWidth(data->sub_img_width);
 
         QFile file(TMP_IMG);
         file.open(QIODevice::WriteOnly);
         cropped.save(&file, "PPM");
 
+        // @TODO go one here
+        checkImage(data, TMP_IMG, url, rect);
+
         delete [] path1;
         delete [] path2;
-
-        // @TODO go one here
     }
 }
-
-/*float Controller::GetDiffFactor(QPoint top1, QPoint bottom1, QPoint top2, QPoint bottom2) {
-    float dist1 = bottom1.y() - top1.y();
-    float dist2 = bottom2.y() - top2.y();
-
-    return dist2/dist1;
-}*/
 
 vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint point) {
     /**
