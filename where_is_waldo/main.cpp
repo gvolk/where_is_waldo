@@ -5,5 +5,6 @@
 int main(int argc, char *argv[])
 {
     Controller c(argc, argv);
-    c.run();
+    //c.run();
+    c.GetRefPoints("", "", QPoint(1010,1125));
 }

@@ -210,7 +210,7 @@ void Controller::testClassifier(TrainingData *data)
 
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 {
-    f = new Feature(data);
+    /*f = new Feature(data);
     f->createFeatures();
     c1_class = new LogRegClassifier(GPU_MODE);
     c2_class = new LogRegClassifier(GPU_MODE);
@@ -226,7 +226,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
     testClassifier(data);
 
-    return;
+    return;*/
 
     // do for all url to compare.
     foreach(const QUrl url, urls) {
@@ -235,7 +235,6 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
             continue;
         }
 
-        // create S s1 and set s1.path = filename. (some for s2).
         vector<Vec2f> topPoints;
         vector<Vec2f> bottomPoints;
         vector<Vec2f> startPoints;
@@ -256,9 +255,9 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         tmpBottom.setX(data->bottom.x() + data->sub_img_start.x());
         tmpBottom.setY(data->bottom.y() + data->sub_img_start.y());
 
-        /*startPoints = GetRefPoints(path1, path2, data->sub_img_start);
+        startPoints = GetRefPoints(path1, path2, data->sub_img_start);
         topPoints = GetRefPoints(path1, path2, tmpTop);
-        bottomPoints = GetRefPoints(path1, path2, tmpBottom);*/
+        bottomPoints = GetRefPoints(path1, path2, tmpBottom);
 
         QPixmap tmpImg(path2);
 
@@ -361,11 +360,11 @@ vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint po
      */
     vector<Vec2f> result;
 
-    string tmp = "../images/cmvs/nvm.cmvs.nvm";
-    const char* filename = tmp.c_str();
+    /*string tmp = "../images/cmvs/test.nvm";
+    const char* filename = tmp.c_str();*/
 
     // Load file paths.
-    vector<S> paths = LoadFilenamesFromFile(filename);
+    /*vector<S> paths = LoadFilenamesFromFile(filename);
     signed int index1 = -1;
     signed int index2 = -1;
     for (unsigned int i = 0; i < paths.size(); i++) {
@@ -382,29 +381,31 @@ vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint po
 
     if (index1 == -1 || index2 == -1) {
         return vector<Vec2f>();
-    }
+    }*/
+    /*signed int index1 = -1;
+    signed int index2 = -1;
+    index1 = 1;
+    index2 = 2;*/
 
     // Load camera data.
     vector<pair<CameraDataf, CameraPoseDataf> > cameraData =
-                LoadCamerasFromFile(filename);
+            LoadCamerasFromFile("../images/cmvs/test.nvm");
 
     // Pick to cameras
-    CameraDataf cam1 = cameraData[index1].first;
-    CameraPoseDataf pose1 = cameraData[index1].second;
-    CameraDataf cam2 = cameraData[index2].first;
-    CameraPoseDataf pose2 = cameraData[index2].second;
+    CameraDataf cam1 = cameraData[1].first;
+    cout << "focal=" << cam1.FocalLength << "image=" << cam1.ImageSize << endl;
+    CameraPoseDataf pose1 = cameraData[1].second;
+    CameraDataf cam2 = cameraData[2].first;
+    CameraPoseDataf pose2 = cameraData[2].second;
 
     // === Project a point from one camera to the other ===
     //Vec2f image1Point(cam1.ImageSize / 2); // Pick a point at the center of the image
-    Vec2f image1Point;
-
-    image1Point[0] = point.x();
-    image1Point[1] = point.y();
+    //Vec2f image1Point(float(point.x()), float(point.y()));
+    Vec2f image1Point(1010.f, 1125.f);
 
     // Process several depths
     for (float d = 0.4f; d <= 1.6f; d += 0.3f)
     {
-        //### DO TOP POINT
         // Transform point to viewspace vector
         Vec3f cam1Dir = cam1.GetViewspaceDirection(image1Point);
         // Transform to worldspace ray
@@ -424,14 +425,10 @@ vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint po
         cout << "Center pixel of first image (" << image1Point << ") "
                 << "with depth " << d << " corresponds to (" << image2Point
                 << ") on second image." << endl;
-
-        /*QPoint point2;
-        point2.setX(image2Point[0]);
-        point2.setY(image2Point[1]);*/
-
-
-        result.push_back(image2Point);
     }
+
+    //result.push_back(image2Point);
+
 
     return result;
 }
@@ -515,10 +512,11 @@ vector<pair<CameraDataf, CameraPoseDataf> > Controller::LoadCamerasFromFile(
         RotationQuaternion<float> rotation;
         Vec3f position;
         float focalLength;
-        sscanf(line.c_str(), "%s	%f %f %f %f %f %f %f %f", path, &focalLength,
+        sscanf(line.c_str(), "%s    %f %f %f %f %f %f %f %f", path, &focalLength,
                 &rotation[3], &rotation[0], &rotation[2], &rotation[1],
                 &position[0], &position[2], &position[1]);
 
+        cout << focalLength << endl;
         CameraDataf intrinsics;
         intrinsics.FocalLength[0] = focalLength;
         intrinsics.FocalLength[1] = focalLength;

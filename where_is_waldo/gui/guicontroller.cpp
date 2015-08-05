@@ -3,6 +3,7 @@
 GuiController::GuiController(int & argc, char ** argv)
 {
     app = new QApplication(argc, argv);
+    setlocale(LC_NUMERIC,"C");
     window = new MainWindow();
 
 
