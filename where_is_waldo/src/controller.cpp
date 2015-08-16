@@ -516,7 +516,7 @@ vector<pair<CameraDataf, CameraPoseDataf> > Controller::LoadCamerasFromFile(
                 &rotation[3], &rotation[0], &rotation[2], &rotation[1],
                 &position[0], &position[2], &position[1]);
 
-        cout << focalLength << endl;
+        printf("%.8f\n",focalLength);
         CameraDataf intrinsics;
         intrinsics.FocalLength[0] = focalLength;
         intrinsics.FocalLength[1] = focalLength;
