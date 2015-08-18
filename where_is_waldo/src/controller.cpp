@@ -119,7 +119,7 @@ float Controller::getPCorrect_Classifier(TrainingData* data, int* predictions, i
     return(correct/sum);
 }
 
-bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
+float Controller::checkWaldo(TrainingData* data, const char* imagepath)
 {
     Feature *f_test = new Feature(data, imagepath);
     f_test->createFeatures();
@@ -161,16 +161,17 @@ bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
     correct = correct_area1 * 4 + correct_area2 * 4 + correct_area3 * 2;
     correct = correct / 10;
 
-    qDebug() << correct;
+    //qDebug() << correct;
 
-    if(correct >=0.45)
+    /*if(correct >=0.45)
     {
         return true;
     }
     else
     {
         return false;
-    }
+    }*/
+    return correct;
 }
 
 /*
@@ -183,23 +184,27 @@ void Controller::checkImage(TrainingData *data, const char* imagepath, QUrl url,
 
     if(checkWaldo(data, imagepath))
     {
-        qDebug()<< imagepath << "  found waldo";
-        int* x = new int[1];
-        int* y = new int[1];
-        int* width = new int[1];
-        int* height = new int[1];
-        rect.getRect(x,y,width,height);
-
-        WaldoMarker * waldo =new WaldoMarker();
-
-        waldo->file = url;
-        waldo->sub_img_start = QPoint(x[0],y[0]);
-        waldo->sub_img_width = width[0];
-        waldo->sub_img_heigth = height[0];
-
-        gc->addFoundWaldo(*waldo);
+        markWaldo(imagepath, url, rect);
     }
+}
 
+void Controller::markWaldo(const char* imagepath, QUrl url, QRect rect)
+{
+    qDebug() << imagepath << "  found waldo";
+    int* x = new int[1];
+    int* y = new int[1];
+    int* width = new int[1];
+    int* height = new int[1];
+    rect.getRect(x,y,width,height);
+
+    WaldoMarker * waldo = new WaldoMarker();
+
+    waldo->file = url;
+    waldo->sub_img_start = QPoint(x[0],y[0]);
+    waldo->sub_img_width = width[0];
+    waldo->sub_img_heigth = height[0];
+
+    gc->addFoundWaldo(*waldo);
 }
 
 void Controller::testClassifier(TrainingData *data)
@@ -210,32 +215,19 @@ void Controller::testClassifier(TrainingData *data)
 
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 {
-    qDebug() << "starting";
     f = new Feature(data);
-    qDebug() << "starting1";
     f->createFeatures();
-    qDebug() << "starting11";
     c1_class = new LogRegClassifier(GPU_MODE);
     c2_class = new LogRegClassifier(GPU_MODE);
     c3_class = new LogRegClassifier(GPU_MODE);
 
-    qDebug() << "starting2";
-
     c1_class->train(f->getFeature(1));
     c1_class->test_classification(f->getFeature(1), f->getFeature(1));
-
-    qDebug() << "starting3";
-
     c2_class->train(f->getFeature(2));
     c2_class->test_classification(f->getFeature(2), f->getFeature(2));
-
     c3_class->train(f->getFeature(3));
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
     //testClassifier(data);
-
-    qDebug() << "starting4";
-
-    //return;*/
 
     // do for all url to compare.
     foreach(const QUrl url, urls) {
@@ -270,7 +262,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 
         QPixmap tmpImg(path2);
 
-        Vec2f topAverage;
+        /*Vec2f topAverage;
         topAverage[0] = 0.f;
         topAverage[1] = 0.f;
 
@@ -280,49 +272,72 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 
         Vec2f startAverage;
         startAverage[0] = 0.f;
-        startAverage[1] = 0.f;
+        startAverage[1] = 0.f;*/
+
+        int tmpDiffY = data->sub_img_heigth;
+        int tmpDiffX = data->sub_img_width;
+
+        float match = 0.f;
+        QRect matchRect;
 
         for (unsigned int i = 0; i < topPoints.size(); i++) {
             Vec2f top = topPoints[i];
             Vec2f bottom = bottomPoints[i];
             Vec2f start = startPoints[i];
 
-            topAverage[0] += top[0];
+            /*topAverage[0] += top[0];
             topAverage[1] += top[1];
 
             bottomAverage[0] += bottom[0];
             bottomAverage[1] += bottom[1];
 
             startAverage[0] += start[0];
-            startAverage[1] += start[1];
+            startAverage[1] += start[1];*/
+
+            float diffY = bottom[1] - top[1];
+
+            float scaleFactor = diffY / tmpDiffY;
+
+            int diffX = (int)(tmpDiffX * scaleFactor);
+
+            QRect rect(start[0], start[1], diffX, (int)diffY);
+            QPixmap cropped = tmpImg.copy(rect);
+
+            cropped = cropped.scaledToHeight(tmpDiffY);
+            cropped = cropped.scaledToWidth(tmpDiffX);
+
+            QFile file(TMP_IMG);
+            file.open(QIODevice::WriteOnly);
+            cropped.save(&file, "PPM");
+
+            // @TODO go one here
+            //checkImage(data, TMP_IMG, url, rect);
+            float tmpMatch = checkWaldo(data, TMP_IMG);
+            qDebug() << "Match: " << tmpMatch;
+            if (tmpMatch > match) {
+                match = tmpMatch;
+                matchRect = rect;
+            }
         }
 
-        topAverage[0] /= topPoints.size();
+        if (match >= 0.475) {
+            markWaldo(TMP_IMG, url, matchRect);
+        }
+        /*topAverage[0] /= topPoints.size();
         topAverage[1] /= topPoints.size();
 
         bottomAverage[0] /= topPoints.size();
         bottomAverage[1] /= topPoints.size();
 
         startAverage[0] /= topPoints.size();
-        startAverage[1] /= topPoints.size();
+        startAverage[1] /= topPoints.size();*/
 
-        float diffY = bottomAverage[1] - topAverage[1];
+        /*float diffY = bottomAverage[1] - topAverage[1];
         qDebug() << diffY;
-
-        int tmpDiffY = data->sub_img_heigth;
-        int tmpDiffX = data->sub_img_width;
 
         float scaleFactor = diffY / tmpDiffY;
 
         int diffX = (int)(tmpDiffX * scaleFactor);
-
-        //save original heigth and width of image
-        // temporary data dirty fix: 955, 940 to 1115, 1150
-        //startAverage[0] = 955.f;
-        //startAverage[1] = 940.f;
-
-        //int diffX = 1115.f - (int)startAverage[0];
-        //float diffY = 1150.f - startAverage[1];
 
         QRect rect(startAverage[0], startAverage[1], diffX, (int)diffY);
         QPixmap cropped = tmpImg.copy(rect);
@@ -335,7 +350,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         cropped.save(&file, "PPM");
 
         // @TODO go one here
-        checkImage(data, TMP_IMG, url, rect);
+        checkImage(data, TMP_IMG, url, rect);*/
 
         delete [] path1;
         delete [] path2;
@@ -520,7 +535,7 @@ vector<pair<CameraDataf, CameraPoseDataf> > Controller::LoadCamerasFromFile(
                 &rotation[3], &rotation[0], &rotation[2], &rotation[1],
                 &position[0], &position[2], &position[1]);
 
-        printf("%.8f\n",focalLength);
+        //printf("%.8f\n",focalLength);
         CameraDataf intrinsics;
         intrinsics.FocalLength[0] = focalLength;
         intrinsics.FocalLength[1] = focalLength;
