@@ -163,7 +163,7 @@ bool Controller::checkWaldo(TrainingData* data, const char* imagepath)
 
     qDebug() << correct;
 
-    if(correct >=0.5)
+    if(correct >=0.45)
     {
         return true;
     }
@@ -210,23 +210,32 @@ void Controller::testClassifier(TrainingData *data)
 
 void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
 {
-    /*f = new Feature(data);
+    qDebug() << "starting";
+    f = new Feature(data);
+    qDebug() << "starting1";
     f->createFeatures();
+    qDebug() << "starting11";
     c1_class = new LogRegClassifier(GPU_MODE);
     c2_class = new LogRegClassifier(GPU_MODE);
     c3_class = new LogRegClassifier(GPU_MODE);
 
+    qDebug() << "starting2";
+
     c1_class->train(f->getFeature(1));
     c1_class->test_classification(f->getFeature(1), f->getFeature(1));
+
+    qDebug() << "starting3";
 
     c2_class->train(f->getFeature(2));
     c2_class->test_classification(f->getFeature(2), f->getFeature(2));
 
     c3_class->train(f->getFeature(3));
     c3_class->test_classification(f->getFeature(3), f->getFeature(3));
-    testClassifier(data);
+    //testClassifier(data);
 
-    return;*/
+    qDebug() << "starting4";
+
+    //return;*/
 
     // do for all url to compare.
     foreach(const QUrl url, urls) {
@@ -273,7 +282,7 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         startAverage[0] = 0.f;
         startAverage[1] = 0.f;
 
-        /*for (unsigned int i = 0; i < topPoints.size(); i++) {
+        for (unsigned int i = 0; i < topPoints.size(); i++) {
             Vec2f top = topPoints[i];
             Vec2f bottom = bottomPoints[i];
             Vec2f start = startPoints[i];
@@ -300,28 +309,24 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         float diffY = bottomAverage[1] - topAverage[1];
         qDebug() << diffY;
 
-
         int tmpDiffY = data->sub_img_heigth;
         int tmpDiffX = data->sub_img_width;
 
         float scaleFactor = diffY / tmpDiffY;
 
         int diffX = (int)(tmpDiffX * scaleFactor);
-        */
 
         //save original heigth and width of image
         // temporary data dirty fix: 955, 940 to 1115, 1150
-        startAverage[0] = 955.f;
-        startAverage[1] = 940.f;
+        //startAverage[0] = 955.f;
+        //startAverage[1] = 940.f;
 
-        int diffX = 1115.f - (int)startAverage[0];
-        float diffY = 1150.f - startAverage[1];
+        //int diffX = 1115.f - (int)startAverage[0];
+        //float diffY = 1150.f - startAverage[1];
 
         QRect rect(startAverage[0], startAverage[1], diffX, (int)diffY);
         QPixmap cropped = tmpImg.copy(rect);
 
-        //qDebug() << (cropped.height() * scaleFactor);
-        //qDebug() << (cropped.width() * scaleFactor);
         cropped = cropped.scaledToHeight(data->sub_img_heigth);
         cropped = cropped.scaledToWidth(data->sub_img_width);
 
@@ -360,11 +365,11 @@ vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint po
      */
     vector<Vec2f> result;
 
-    /*string tmp = "../images/cmvs/test.nvm";
-    const char* filename = tmp.c_str();*/
+    string tmp = "../images/cmvs/test.nvm";
+    const char* filename = tmp.c_str();
 
     // Load file paths.
-    /*vector<S> paths = LoadFilenamesFromFile(filename);
+    vector<S> paths = LoadFilenamesFromFile(filename);
     signed int index1 = -1;
     signed int index2 = -1;
     for (unsigned int i = 0; i < paths.size(); i++) {
@@ -381,7 +386,7 @@ vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint po
 
     if (index1 == -1 || index2 == -1) {
         return vector<Vec2f>();
-    }*/
+    }
     /*signed int index1 = -1;
     signed int index2 = -1;
     index1 = 1;
@@ -392,16 +397,15 @@ vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint po
             LoadCamerasFromFile("../images/cmvs/test.nvm");
 
     // Pick to cameras
-    CameraDataf cam1 = cameraData[1].first;
-    cout << "focal=" << cam1.FocalLength << "image=" << cam1.ImageSize << endl;
-    CameraPoseDataf pose1 = cameraData[1].second;
-    CameraDataf cam2 = cameraData[2].first;
-    CameraPoseDataf pose2 = cameraData[2].second;
+    CameraDataf cam1 = cameraData[index1].first;
+    CameraPoseDataf pose1 = cameraData[index1].second;
+    CameraDataf cam2 = cameraData[index2].first;
+    CameraPoseDataf pose2 = cameraData[index2].second;
 
     // === Project a point from one camera to the other ===
     //Vec2f image1Point(cam1.ImageSize / 2); // Pick a point at the center of the image
-    //Vec2f image1Point(float(point.x()), float(point.y()));
-    Vec2f image1Point(1010.f, 1125.f);
+    Vec2f image1Point(float(point.x()), float(point.y()));
+    //Vec2f image1Point(1010.f, 1125.f);
 
     // Process several depths
     for (float d = 0.4f; d <= 1.6f; d += 0.3f)
@@ -425,9 +429,9 @@ vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint po
         cout << "Center pixel of first image (" << image1Point << ") "
                 << "with depth " << d << " corresponds to (" << image2Point
                 << ") on second image." << endl;
-    }
 
-    //result.push_back(image2Point);
+        result.push_back(image2Point);
+    }
 
 
     return result;
