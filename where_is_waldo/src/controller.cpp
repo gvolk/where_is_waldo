@@ -274,9 +274,6 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
         startAverage[0] = 0.f;
         startAverage[1] = 0.f;*/
 
-        int tmpDiffY = data->sub_img_heigth;
-        int tmpDiffX = data->sub_img_width;
-
         float match = 0.f;
         QRect matchRect;
 
@@ -294,17 +291,20 @@ void Controller::search_waldo(QList<QUrl> urls, TrainingData *data)
             startAverage[0] += start[0];
             startAverage[1] += start[1];*/
 
-            float diffY = bottom[1] - top[1];
+            float diff = bottom[1] - top[1];
+            float tmpDiffY = data->bottom.y() - data->top.y();
 
-            float scaleFactor = diffY / tmpDiffY;
+            float scaleFactor = diff / data->sub_img_heigth;
+            scaleFactor = scaleFactor * (data->sub_img_heigth / tmpDiffY);
 
-            int diffX = (int)(tmpDiffX * scaleFactor);
+            int diffX = (int)(data->sub_img_width * scaleFactor);
+            int diffY = (int)(data->sub_img_heigth * scaleFactor);
 
-            QRect rect(start[0], start[1], diffX, (int)diffY);
+            QRect rect(start[0], start[1], diffX, diffY);
             QPixmap cropped = tmpImg.copy(rect);
 
-            cropped = cropped.scaledToHeight(tmpDiffY);
-            cropped = cropped.scaledToWidth(tmpDiffX);
+            cropped = cropped.scaledToHeight(data->sub_img_heigth);
+            cropped = cropped.scaledToWidth(data->sub_img_width);
 
             QFile file(TMP_IMG);
             file.open(QIODevice::WriteOnly);
