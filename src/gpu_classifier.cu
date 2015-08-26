@@ -27,10 +27,19 @@ __global__ void trainKernel(int* labels, float* features, int num_features, doub
         return;
     }
 
+    __shared__ double shared_beta[FEAT_LEN];
+
+    //load beta into shared memory
+    if(threadIdx.x < FEAT_LEN)
+    {
+        shared_beta[threadIdx.x] = beta[threadIdx.x];
+    }
+    __syncthreads();
+
     pos = x * FEAT_LEN ;
 
     for(int j = 0; j < FEAT_LEN; j++) {
-            z += beta[j] * (double)features[pos + j];
+            z += shared_beta[j] * (double)features[pos + j];
     }
 
     proby = (1.0 / (1.0 + exp(-z)));
@@ -208,10 +217,19 @@ __global__ void predictKernel(float* features, double* beta, int num_features, i
         return;
     }
 
+    __shared__ double shared_beta[FEAT_LEN];
+
+    //load beta into shared memory
+    if(threadIdx.x < FEAT_LEN)
+    {
+        shared_beta[threadIdx.x] = beta[threadIdx.x];
+    }
+    __syncthreads();
+
     pos = x * FEAT_LEN ;
 
     for(int j = 0; j < FEAT_LEN; j++) {
-            z += beta[j] * features[pos + j];
+            z += shared_beta[j] * features[pos + j];
     }
 
     proby = (1.0 / (1.0 + exp(-z)));
