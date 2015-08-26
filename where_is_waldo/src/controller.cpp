@@ -380,7 +380,7 @@ vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint po
      */
     vector<Vec2f> result;
 
-    string tmp = "../images/cmvs/test.nvm";
+    string tmp = NVM_FILE;
     const char* filename = tmp.c_str();
 
     // Load file paths.
@@ -409,7 +409,7 @@ vector<Vec2f> Controller::GetRefPoints(const char* s1, const char* s2, QPoint po
 
     // Load camera data.
     vector<pair<CameraDataf, CameraPoseDataf> > cameraData =
-            LoadCamerasFromFile("../images/cmvs/test.nvm");
+            LoadCamerasFromFile(NVM_FILE);
 
     // Pick to cameras
     CameraDataf cam1 = cameraData[index1].first;
